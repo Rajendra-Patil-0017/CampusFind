@@ -3,7 +3,7 @@ import { APP_CONFIG } from '@/constants/config';
 import { LostFoundItem } from '@/types/item';
 import { isSupabaseConfigured, supabase } from './supabase';
 import { PhotoStorageService } from './storage-supabase';
-import { SAMPLE_ITEMS } from './storage';
+import { SAMPLE_ITEMS } from './mock-data';
 
 // Database row interface matching PostgreSQL schema
 export interface SupabaseItemRow {

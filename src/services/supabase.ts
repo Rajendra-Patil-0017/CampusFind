@@ -17,11 +17,41 @@ export const isSupabaseConfigured = Boolean(
 const validSupabaseUrl = isSupabaseConfigured ? supabaseUrl : 'https://placeholder.supabase.co';
 const validSupabaseKey = isSupabaseConfigured ? supabaseAnonKey : 'placeholder-anon-key';
 
+const isServer = typeof window === 'undefined';
+
+// Safe storage adapter preventing SSR crashes when window is not defined
+const SafeSupabaseStorage = {
+  getItem: async (key: string): Promise<string | null> => {
+    if (isServer) return null;
+    try {
+      return await AsyncStorage.getItem(key);
+    } catch {
+      return null;
+    }
+  },
+  setItem: async (key: string, value: string): Promise<void> => {
+    if (isServer) return;
+    try {
+      await AsyncStorage.setItem(key, value);
+    } catch {
+      // Ignore storage errors on SSR
+    }
+  },
+  removeItem: async (key: string): Promise<void> => {
+    if (isServer) return;
+    try {
+      await AsyncStorage.removeItem(key);
+    } catch {
+      // Ignore storage errors on SSR
+    }
+  },
+};
+
 export const supabase = createClient(validSupabaseUrl, validSupabaseKey, {
   auth: {
-    storage: AsyncStorage,
-    autoRefreshToken: true,
-    persistSession: true,
-    detectSessionInUrl: Platform.OS === 'web',
+    storage: SafeSupabaseStorage,
+    autoRefreshToken: !isServer,
+    persistSession: !isServer,
+    detectSessionInUrl: Platform.OS === 'web' && !isServer,
   },
 });
