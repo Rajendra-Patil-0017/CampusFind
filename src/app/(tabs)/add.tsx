@@ -18,7 +18,7 @@ import { CategoryPicker } from '@/components/CategoryPicker';
 import { useTheme } from '@/hooks/use-theme';
 import { StorageService } from '@/services/storage';
 import { ItemFormData, validateItemForm, ValidationErrors } from '@/utils/validation';
-import { BorderRadius, MaxContentWidth, ScreenPadding, Spacing } from '@/constants/theme';
+import { BorderRadius, Fonts, MaxContentWidth, ScreenPadding, Spacing } from '@/constants/theme';
 import { Ionicons } from '@expo/vector-icons';
 
 const CAMPUS_LOCATION_SUGGESTIONS = [
@@ -542,8 +542,9 @@ const styles = StyleSheet.create({
     paddingBottom: Spacing.two,
   },
   headerTitle: {
-    fontSize: 22,
-    fontWeight: '800',
+    fontFamily: Fonts.serif,
+    fontSize: 24,
+    fontWeight: '700',
     letterSpacing: -0.4,
   },
   headerSubtitle: {

@@ -23,7 +23,7 @@ import { APP_CONFIG } from '@/constants/config';
 import { CATEGORY_DETAILS, Category } from '@/constants/categories';
 import { LostFoundItem } from '@/types/item';
 import { formatDisplayDate, formatRelativeTime } from '@/utils/formatters';
-import { BorderRadius, MaxContentWidth, ScreenPadding, Shadows, Spacing } from '@/constants/theme';
+import { BorderRadius, Fonts, MaxContentWidth, ScreenPadding, Shadows, Spacing } from '@/constants/theme';
 import { Ionicons } from '@expo/vector-icons';
 
 export default function ItemDetailsScreen() {
@@ -427,10 +427,11 @@ const styles = StyleSheet.create({
     fontWeight: '500',
   },
   title: {
-    fontSize: 22,
-    fontWeight: '800',
+    fontFamily: Fonts.serif,
+    fontSize: 24,
+    fontWeight: '700',
     letterSpacing: -0.4,
-    lineHeight: 28,
+    lineHeight: 30,
     marginBottom: 6,
   },
   postedTime: {

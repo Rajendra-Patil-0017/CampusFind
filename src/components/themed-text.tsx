@@ -4,7 +4,7 @@ import { Fonts, ThemeColor } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
 
 export type ThemedTextProps = TextProps & {
-  type?: 'default' | 'title' | 'small' | 'smallBold' | 'subtitle' | 'link' | 'linkPrimary' | 'code';
+  type?: 'default' | 'title' | 'small' | 'smallBold' | 'subtitle' | 'link' | 'linkPrimary' | 'code' | 'serif' | 'serifTitle' | 'serifHeading';
   themeColor?: ThemeColor;
 };
 
@@ -14,7 +14,7 @@ export function ThemedText({ style, type = 'default', themeColor, ...rest }: The
   return (
     <Text
       style={[
-        { color: theme[themeColor ?? 'text'] },
+        { color: (theme as any)[themeColor ?? 'text'] || theme.text, fontFamily: Fonts.sans },
         type === 'default' && styles.default,
         type === 'title' && styles.title,
         type === 'small' && styles.small,
@@ -23,6 +23,9 @@ export function ThemedText({ style, type = 'default', themeColor, ...rest }: The
         type === 'link' && styles.link,
         type === 'linkPrimary' && styles.linkPrimary,
         type === 'code' && styles.code,
+        type === 'serif' && styles.serif,
+        type === 'serifTitle' && styles.serifTitle,
+        type === 'serifHeading' && styles.serifHeading,
         style,
       ]}
       {...rest}
@@ -69,5 +72,22 @@ const styles = StyleSheet.create({
     fontFamily: Fonts.mono,
     fontWeight: Platform.select({ android: 700 }) ?? 500,
     fontSize: 12,
+  },
+  serif: {
+    fontFamily: Fonts.serif,
+  },
+  serifTitle: {
+    fontFamily: Fonts.serif,
+    fontSize: 24,
+    fontWeight: '700',
+    lineHeight: 30,
+    letterSpacing: -0.3,
+  },
+  serifHeading: {
+    fontFamily: Fonts.serif,
+    fontSize: 18,
+    fontWeight: '700',
+    lineHeight: 24,
+    letterSpacing: -0.2,
   },
 });

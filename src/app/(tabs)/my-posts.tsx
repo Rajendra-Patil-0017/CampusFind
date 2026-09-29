@@ -18,7 +18,7 @@ import { useTheme } from '@/hooks/use-theme';
 import { StorageService } from '@/services/storage';
 import { APP_CONFIG } from '@/constants/config';
 import { ItemStatus, LostFoundItem } from '@/types/item';
-import { BorderRadius, MaxContentWidth, ScreenPadding, Spacing } from '@/constants/theme';
+import { BorderRadius, Fonts, MaxContentWidth, ScreenPadding, Spacing } from '@/constants/theme';
 import { Ionicons } from '@expo/vector-icons';
 
 export default function MyPostsScreen() {
@@ -314,8 +314,9 @@ const styles = StyleSheet.create({
     paddingBottom: Spacing.two,
   },
   headerTitle: {
-    fontSize: 22,
-    fontWeight: '800',
+    fontFamily: Fonts.serif,
+    fontSize: 24,
+    fontWeight: '700',
     letterSpacing: -0.4,
   },
   headerSubtitle: {

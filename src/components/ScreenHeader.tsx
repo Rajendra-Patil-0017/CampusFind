@@ -7,7 +7,7 @@ import {
 import { router } from 'expo-router';
 import { ThemedText } from './themed-text';
 import { useTheme } from '@/hooks/use-theme';
-import { BorderRadius, Spacing } from '@/constants/theme';
+import { BorderRadius, Fonts, Spacing } from '@/constants/theme';
 import { Ionicons } from '@expo/vector-icons';
 
 interface ScreenHeaderProps {
@@ -134,6 +134,7 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   title: {
+    fontFamily: Fonts.serif,
     fontSize: 20,
     fontWeight: '700',
     letterSpacing: -0.3,

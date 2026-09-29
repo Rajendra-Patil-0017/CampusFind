@@ -8,10 +8,22 @@ export type ThemeColor = keyof typeof AppColors.light;
 
 export const Fonts = Platform.select({
   ios: {
-    sans: 'system-ui',
-    serif: 'ui-serif',
-    rounded: 'ui-rounded',
-    mono: 'ui-monospace',
+    sans: 'System',
+    serif: 'Georgia',
+    rounded: 'System',
+    mono: 'Courier New',
+  },
+  android: {
+    sans: 'sans-serif',
+    serif: 'serif',
+    rounded: 'sans-serif',
+    mono: 'monospace',
+  },
+  web: {
+    sans: 'Plus Jakarta Sans, Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
+    serif: 'Newsreader, Georgia, "Times New Roman", serif',
+    rounded: 'Plus Jakarta Sans, Inter, sans-serif',
+    mono: 'ui-monospace, "SF Mono", Menlo, Monaco, Consolas, monospace',
   },
   default: {
     sans: 'normal',
@@ -26,8 +38,9 @@ export const Typography = {
   sm: 13,     // Secondary text, sub-labels, category labels
   base: 14,   // Body text, form inputs, search bar
   md: 16,     // Item card titles, buttons, section headings
-  lg: 18,     // Modal titles, dialog headings
-  xl: 22,     // Screen main titles
+  lg: 19,     // Modal titles, dialog headings, card headers
+  xl: 24,     // Screen masthead & main titles
+  display: 28, // Hero masthead title
 } as const;
 
 export const Spacing = {
@@ -47,14 +60,14 @@ export const BorderRadius = {
   sm: 8,
   md: 10,
   lg: 14,
-  xl: 16,
+  xl: 18,
   full: 9999,
 } as const;
 
 export const Shadows = {
   subtle: Platform.select({
     ios: {
-      shadowColor: '#183B4E',
+      shadowColor: '#1E3A2B',
       shadowOffset: { width: 0, height: 1 },
       shadowOpacity: 0.05,
       shadowRadius: 2,
@@ -63,43 +76,43 @@ export const Shadows = {
       elevation: 1,
     },
     web: {
-      boxShadow: '0 1px 2px rgba(24, 59, 78, 0.04)',
+      boxShadow: '0 1px 3px rgba(30, 58, 43, 0.05)',
     },
     default: {},
   }),
   card: Platform.select({
     ios: {
-      shadowColor: '#183B4E',
+      shadowColor: '#1E3A2B',
       shadowOffset: { width: 0, height: 2 },
       shadowOpacity: 0.06,
+      shadowRadius: 5,
+    },
+    android: {
+      elevation: 2,
+    },
+    web: {
+      boxShadow: '0 2px 6px rgba(30, 58, 43, 0.06)',
+    },
+    default: {},
+  }),
+  button: Platform.select({
+    ios: {
+      shadowColor: '#1E3A2B',
+      shadowOffset: { width: 0, height: 2 },
+      shadowOpacity: 0.12,
       shadowRadius: 4,
     },
     android: {
       elevation: 2,
     },
     web: {
-      boxShadow: '0 2px 4px rgba(24, 59, 78, 0.06)',
-    },
-    default: {},
-  }),
-  button: Platform.select({
-    ios: {
-      shadowColor: '#183B4E',
-      shadowOffset: { width: 0, height: 2 },
-      shadowOpacity: 0.12,
-      shadowRadius: 3,
-    },
-    android: {
-      elevation: 2,
-    },
-    web: {
-      boxShadow: '0 2px 4px rgba(24, 59, 78, 0.12)',
+      boxShadow: '0 2px 5px rgba(30, 58, 43, 0.14)',
     },
     default: {},
   }),
   tag: Platform.select({
     ios: {
-      shadowColor: '#183B4E',
+      shadowColor: '#1E3A2B',
       shadowOffset: { width: 0, height: 1 },
       shadowOpacity: 0.04,
       shadowRadius: 2,
@@ -108,7 +121,7 @@ export const Shadows = {
       elevation: 1,
     },
     web: {
-      boxShadow: '0 1px 2px rgba(24, 59, 78, 0.04)',
+      boxShadow: '0 1px 2px rgba(30, 58, 43, 0.04)',
     },
     default: {},
   }),

@@ -10,7 +10,7 @@ import { StatusBadge } from './StatusBadge';
 import { useTheme } from '@/hooks/use-theme';
 import { LostFoundItem } from '@/types/item';
 import { CATEGORY_DETAILS, Category } from '@/constants/categories';
-import { BorderRadius, Shadows, Spacing, Typography } from '@/constants/theme';
+import { BorderRadius, Fonts, Shadows, Spacing, Typography } from '@/constants/theme';
 import { formatRelativeTime, getTruncatedText } from '@/utils/formatters';
 import { Ionicons } from '@expo/vector-icons';
 
@@ -26,6 +26,7 @@ export function ItemCard({ item, onPress, showStatus = true }: ItemCardProps) {
     'cube-outline') as keyof typeof Ionicons.glyphMap;
 
   const isResolved = item.status === 'resolved';
+  const isLost = item.type === 'lost';
 
   return (
     <Pressable
@@ -37,16 +38,16 @@ export function ItemCard({ item, onPress, showStatus = true }: ItemCardProps) {
         {
           backgroundColor: theme.card,
           borderColor: theme.border,
-          opacity: pressed ? 0.92 : 1,
+          opacity: pressed ? 0.94 : 1,
         },
         Shadows.card,
       ]}>
-      {/* Thumbnail or Category Icon Placeholder */}
+      {/* Media Thumbnail or Category Graphic */}
       <View style={styles.mediaContainer}>
         {item.imageUri ? (
           <Image
             source={{ uri: item.imageUri }}
-            style={[styles.thumbnail, { backgroundColor: theme.background, borderColor: theme.border }]}
+            style={[styles.thumbnail, { backgroundColor: theme.elevatedSurface, borderColor: theme.border }]}
             contentFit="cover"
             transition={150}
           />
@@ -55,28 +56,30 @@ export function ItemCard({ item, onPress, showStatus = true }: ItemCardProps) {
             style={[
               styles.placeholder,
               {
-                backgroundColor: item.type === 'lost' ? theme.lostBg : theme.foundBg,
-                borderColor: item.type === 'lost' ? theme.lostBorder : theme.foundBorder,
+                backgroundColor: isLost ? theme.lostBg : theme.foundBg,
+                borderColor: isLost ? theme.lostBorder : theme.foundBorder,
               },
             ]}>
             <Ionicons
               name={categoryIcon}
-              size={24}
-              color={item.type === 'lost' ? theme.lost : theme.found}
+              size={28}
+              color={isLost ? theme.lost : theme.found}
             />
+            <ThemedText
+              style={[
+                styles.placeholderTag,
+                { color: isLost ? theme.lostText : theme.foundText },
+              ]}>
+              {item.category}
+            </ThemedText>
           </View>
         )}
       </View>
 
-      {/* Content Area with strict Information Hierarchy */}
+      {/* Editorial Content Block */}
       <View style={styles.content}>
-        {/* 1. Item Title */}
-        <ThemedText style={[styles.title, { color: theme.text }]} numberOfLines={1}>
-          {item.name}
-        </ThemedText>
-
-        {/* 2. Status Badge and Category */}
-        <View style={styles.metaRow}>
+        {/* Badges & Category Header */}
+        <View style={styles.badgeRow}>
           <StatusBadge type={item.type} size="sm" />
           {showStatus && isResolved && (
             <StatusBadge status={item.status} size="sm" />
@@ -93,30 +96,46 @@ export function ItemCard({ item, onPress, showStatus = true }: ItemCardProps) {
           </View>
         </View>
 
-        {/* 3. Location and Date */}
-        <View style={styles.locationDateRow}>
-          <View style={styles.locationItem}>
-            <Ionicons name="location-outline" size={12} color={theme.textSecondary} style={{ marginRight: 3 }} />
+        {/* 1. Item Title in Academic Serif */}
+        <ThemedText style={[styles.title, { color: theme.text }]} numberOfLines={2}>
+          {item.name}
+        </ThemedText>
+
+        {/* 2. Location & Date */}
+        <View style={styles.metaRow}>
+          <View style={styles.metaItem}>
+            <Ionicons name="location" size={12} color={theme.primary} style={{ marginRight: 3 }} />
             <ThemedText
-              style={[styles.locationText, { color: theme.textSecondary }]}
+              style={[styles.metaText, { color: theme.textSecondary }]}
               numberOfLines={1}>
               {item.location}
             </ThemedText>
           </View>
-          <ThemedText style={[styles.dotSeparator, { color: theme.textMuted }]}>•</ThemedText>
-          <ThemedText style={[styles.timeText, { color: theme.textMuted }]}>
-            {formatRelativeTime(item.createdAt)}
-          </ThemedText>
+          <ThemedText style={[styles.dot, { color: theme.textMuted }]}>•</ThemedText>
+          <View style={styles.metaItem}>
+            <Ionicons name="time-outline" size={12} color={theme.textMuted} style={{ marginRight: 3 }} />
+            <ThemedText style={[styles.metaText, { color: theme.textMuted }]}>
+              {formatRelativeTime(item.createdAt)}
+            </ThemedText>
+          </View>
         </View>
 
-        {/* 4. Short Description */}
+        {/* 3. Description excerpt */}
         {item.description ? (
           <ThemedText
             style={[styles.description, { color: theme.textSecondary }]}
             numberOfLines={2}>
-            {getTruncatedText(item.description, 95)}
+            {getTruncatedText(item.description, 110)}
           </ThemedText>
         ) : null}
+
+        {/* 4. Action Footer */}
+        <View style={styles.footerRow}>
+          <ThemedText style={[styles.viewDetailsText, { color: theme.primary }]}>
+            View Details
+          </ThemedText>
+          <Ionicons name="arrow-forward" size={13} color={theme.primary} />
+        </View>
       </View>
     </Pressable>
   );
@@ -124,88 +143,103 @@ export function ItemCard({ item, onPress, showStatus = true }: ItemCardProps) {
 
 const styles = StyleSheet.create({
   card: {
-    flexDirection: 'row',
-    borderRadius: BorderRadius.md,
+    borderRadius: BorderRadius.lg,
     borderWidth: 1,
-    padding: Spacing.three,
-    marginBottom: Spacing.two + 2,
-    alignItems: 'flex-start',
+    padding: Spacing.three + 2,
+    marginBottom: Spacing.three,
+    backgroundColor: '#FFFFFF',
+    overflow: 'hidden',
   },
   mediaContainer: {
-    marginRight: Spacing.three,
-    marginTop: 2,
+    marginBottom: Spacing.three,
   },
   thumbnail: {
-    width: 68,
-    height: 68,
-    borderRadius: BorderRadius.sm,
+    width: '100%',
+    height: 140,
+    borderRadius: BorderRadius.md,
     borderWidth: 1,
   },
   placeholder: {
-    width: 68,
-    height: 68,
-    borderRadius: BorderRadius.sm,
+    width: '100%',
+    height: 100,
+    borderRadius: BorderRadius.md,
     borderWidth: 1,
     alignItems: 'center',
     justifyContent: 'center',
+    gap: 4,
+  },
+  placeholderTag: {
+    fontSize: Typography.xs,
+    fontWeight: '600',
+    letterSpacing: 0.2,
   },
   content: {
     flex: 1,
-    justifyContent: 'flex-start',
   },
-  title: {
-    fontSize: Typography.md,
-    fontWeight: '700',
-    letterSpacing: -0.2,
-    marginBottom: 4,
-    lineHeight: 20,
-  },
-  metaRow: {
+  badgeRow: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 6,
     flexWrap: 'wrap',
-    marginBottom: 5,
+    marginBottom: Spacing.two,
   },
   categoryPill: {
     flexDirection: 'row',
     alignItems: 'center',
     paddingHorizontal: 7,
-    paddingVertical: 2,
+    paddingVertical: 2.5,
     borderRadius: BorderRadius.xs,
     borderWidth: 1,
   },
   categoryText: {
     fontSize: Typography.xs,
-    fontWeight: '500',
+    fontWeight: '600',
   },
-  locationDateRow: {
+  title: {
+    fontFamily: Fonts.serif,
+    fontSize: 17,
+    fontWeight: '700',
+    lineHeight: 22,
+    letterSpacing: -0.2,
+    marginBottom: 6,
+  },
+  metaRow: {
     flexDirection: 'row',
     alignItems: 'center',
     flexWrap: 'wrap',
-    marginBottom: 4,
+    marginBottom: 6,
     gap: 4,
   },
-  locationItem: {
+  metaItem: {
     flexDirection: 'row',
     alignItems: 'center',
     flexShrink: 1,
   },
-  locationText: {
+  metaText: {
     fontSize: Typography.xs,
     fontWeight: '500',
   },
-  dotSeparator: {
+  dot: {
     fontSize: Typography.xs,
     marginHorizontal: 2,
   },
-  timeText: {
-    fontSize: Typography.xs,
-    fontWeight: '500',
-  },
   description: {
     fontSize: Typography.sm,
-    lineHeight: 18,
-    marginTop: 1,
+    lineHeight: 19,
+    marginBottom: Spacing.two,
+  },
+  footerRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    marginTop: 2,
+    paddingTop: 6,
+    borderTopWidth: 1,
+    borderTopColor: '#F0ECE1',
+  },
+  viewDetailsText: {
+    fontSize: Typography.xs,
+    fontWeight: '700',
+    letterSpacing: 0.2,
   },
 });
