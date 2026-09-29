@@ -18,7 +18,7 @@ import { useTheme } from '@/hooks/use-theme';
 import { StorageService } from '@/services/storage';
 import { APP_CONFIG } from '@/constants/config';
 import { LostFoundItem } from '@/types/item';
-import { BorderRadius, ScreenPadding, Shadows, Spacing } from '@/constants/theme';
+import { BorderRadius, MaxContentWidth, ScreenPadding, Shadows, Spacing } from '@/constants/theme';
 import { Ionicons } from '@expo/vector-icons';
 
 export default function ProfileScreen() {
@@ -100,13 +100,14 @@ export default function ProfileScreen() {
     <SafeAreaView
       style={[styles.safeArea, { backgroundColor: theme.background }]}
       edges={['top', 'left', 'right']}>
-      {/* Header */}
-      <View style={styles.header}>
-        <ThemedText style={styles.headerTitle}>Profile & Tools</ThemedText>
-        <ThemedText style={[styles.headerSubtitle, { color: theme.textSecondary }]}>
-          Account overview and local data management
-        </ThemedText>
-      </View>
+      <View style={styles.responsiveContainer}>
+        {/* Header */}
+        <View style={styles.header}>
+          <ThemedText style={styles.headerTitle}>Profile & Tools</ThemedText>
+          <ThemedText style={[styles.headerSubtitle, { color: theme.textSecondary }]}>
+            Account overview and local data management
+          </ThemedText>
+        </View>
 
       <ScrollView
         showsVerticalScrollIndicator={false}
@@ -309,12 +310,13 @@ export default function ProfileScreen() {
         onCancel={() => setResetModalVisible(false)}
       />
 
-      {/* Snackbar */}
-      <Snackbar
-        visible={snackbarVisible}
-        message={snackbarMessage}
-        onDismiss={() => setSnackbarVisible(false)}
-      />
+        {/* Snackbar */}
+        <Snackbar
+          visible={snackbarVisible}
+          message={snackbarMessage}
+          onDismiss={() => setSnackbarVisible(false)}
+        />
+      </View>
     </SafeAreaView>
   );
 }
@@ -322,6 +324,12 @@ export default function ProfileScreen() {
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
+  },
+  responsiveContainer: {
+    flex: 1,
+    width: '100%',
+    maxWidth: MaxContentWidth,
+    alignSelf: 'center',
   },
   header: {
     paddingHorizontal: ScreenPadding,
@@ -339,7 +347,7 @@ const styles = StyleSheet.create({
   },
   scrollContent: {
     paddingHorizontal: ScreenPadding,
-    paddingBottom: 80,
+    paddingBottom: 100,
   },
   userCard: {
     flexDirection: 'row',

@@ -35,6 +35,7 @@ export const AppColors = {
     background: '#F6F4EF', // Warm ivory background
     card: '#FFFFFF',
     surface: '#FFFFFF',
+    elevatedSurface: '#F0EFEA',
     border: '#E5E3DD',
     borderStrong: '#D1CFC7',
     text: '#263238', // Main text
@@ -50,7 +51,7 @@ export const AppColors = {
   },
   dark: {
     // Primary architectural campus brand
-    primary: '#8FC5C0', // Crisp primary accent in dark
+    primary: '#8FC5C0', // Crisp primary accent in dark (#8FC5C0)
     primaryNavy: '#183B4E',
     primaryLight: '#162C38',
     primaryDark: '#6BAAA5',
@@ -59,14 +60,14 @@ export const AppColors = {
     accentLight: '#1D3A3B',
 
     // Status colors
-    lost: '#E5B65F', // Warm amber in dark mode
-    lostBg: '#2E2412',
-    lostBorder: '#664E1C',
+    lost: '#E5B65F', // Warm amber in dark mode (#E5B65F)
+    lostBg: '#282012',
+    lostBorder: '#523F17',
     lostText: '#FBE4A8',
 
-    found: '#79BEB5', // Muted teal in dark mode
-    foundBg: '#14282B',
-    foundBorder: '#235052',
+    found: '#79BEB5', // Muted teal in dark mode (#79BEB5)
+    foundBg: '#132628',
+    foundBorder: '#1F474A',
     foundText: '#C4ECE6',
 
     active: '#8FC5C0',
@@ -74,26 +75,27 @@ export const AppColors = {
     activeBorder: '#294B5C',
     activeText: '#D6F2F0',
 
-    resolved: '#62A87C', // Returned/resolved in dark mode
-    resolvedBg: '#16281E',
-    resolvedBorder: '#2A543B',
-    resolvedText: '#C1E6D0',
+    resolved: '#8CB99A', // Returned/resolved in dark mode (#8CB99A)
+    resolvedBg: '#15241C',
+    resolvedBorder: '#254432',
+    resolvedText: '#CEE8D7',
 
     inactive: '#7D8E95', // Inactive status
 
     // Surface & Slate structure
-    background: '#121C22', // Deep slate obsidian
-    card: '#1D2A32',
-    surface: '#24343E',
-    border: '#34434B',
+    background: '#121C22', // Deep slate obsidian (#121C22)
+    card: '#1D2A32', // Surface (#1D2A32)
+    surface: '#1D2A32',
+    elevatedSurface: '#24343D', // Elevated surface (#24343D)
+    border: '#34434B', // Border (#34434B)
     borderStrong: '#455862',
-    text: '#F1F4F3', // Main text
-    textSecondary: '#B2BEC2', // Secondary text
+    text: '#F1F4F3', // Main text (#F1F4F3)
+    textSecondary: '#B2BEC2', // Secondary text (#B2BEC2)
     textMuted: '#70828A', // Muted text
     inputBg: '#17232B',
 
     // Utility feedback
-    success: '#62A87C',
+    success: '#8CB99A',
     warning: '#E5B65F',
     danger: '#F87171',
     dangerBg: '#2E1515',

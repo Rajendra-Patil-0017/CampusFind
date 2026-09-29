@@ -20,7 +20,7 @@ import { LoadingState } from '@/components/LoadingState';
 import { useTheme } from '@/hooks/use-theme';
 import { StorageService } from '@/services/storage';
 import { ItemFormData, validateItemForm, ValidationErrors } from '@/utils/validation';
-import { BorderRadius, ScreenPadding, Spacing } from '@/constants/theme';
+import { BorderRadius, MaxContentWidth, ScreenPadding, Spacing } from '@/constants/theme';
 import { Ionicons } from '@expo/vector-icons';
 
 export default function EditPostScreen() {
@@ -159,15 +159,16 @@ export default function EditPostScreen() {
     <SafeAreaView
       style={[styles.safeArea, { backgroundColor: theme.background }]}
       edges={['top', 'left', 'right']}>
-      <ScreenHeader title="Edit Notice" showBack />
+      <View style={styles.responsiveContainer}>
+        <ScreenHeader title="Edit Notice" showBack />
 
-      <KeyboardAvoidingView
-        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-        style={styles.keyboardAvoid}>
-        <ScrollView
-          showsVerticalScrollIndicator={false}
-          contentContainerStyle={styles.scrollContent}
-          keyboardShouldPersistTaps="handled">
+        <KeyboardAvoidingView
+          behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+          style={styles.keyboardAvoid}>
+          <ScrollView
+            showsVerticalScrollIndicator={false}
+            contentContainerStyle={styles.scrollContent}
+            keyboardShouldPersistTaps="handled">
           {/* Section 1: Type Selection */}
           <View style={styles.section}>
             <ThemedText style={[styles.sectionLabel, { color: theme.textSecondary }]}>
@@ -462,17 +463,18 @@ export default function EditPostScreen() {
             </View>
           </View>
 
-          {/* Save Button */}
-          <View style={styles.submitSection}>
-            <PrimaryButton
-              title={isSubmitting ? 'Saving Changes...' : 'Save Changes'}
-              size="lg"
-              loading={isSubmitting}
-              onPress={handleSubmit}
-            />
-          </View>
-        </ScrollView>
-      </KeyboardAvoidingView>
+            {/* Save Button */}
+            <View style={styles.submitSection}>
+              <PrimaryButton
+                title={isSubmitting ? 'Saving Changes...' : 'Save Changes'}
+                size="lg"
+                loading={isSubmitting}
+                onPress={handleSubmit}
+              />
+            </View>
+          </ScrollView>
+        </KeyboardAvoidingView>
+      </View>
     </SafeAreaView>
   );
 }
@@ -480,6 +482,12 @@ export default function EditPostScreen() {
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
+  },
+  responsiveContainer: {
+    flex: 1,
+    width: '100%',
+    maxWidth: MaxContentWidth,
+    alignSelf: 'center',
   },
   keyboardAvoid: {
     flex: 1,

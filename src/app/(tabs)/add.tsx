@@ -18,7 +18,7 @@ import { CategoryPicker } from '@/components/CategoryPicker';
 import { useTheme } from '@/hooks/use-theme';
 import { StorageService } from '@/services/storage';
 import { ItemFormData, validateItemForm, ValidationErrors } from '@/utils/validation';
-import { BorderRadius, ScreenPadding, Spacing } from '@/constants/theme';
+import { BorderRadius, MaxContentWidth, ScreenPadding, Spacing } from '@/constants/theme';
 import { Ionicons } from '@expo/vector-icons';
 
 const CAMPUS_LOCATION_SUGGESTIONS = [
@@ -136,16 +136,17 @@ export default function AddPostScreen() {
     <SafeAreaView
       style={[styles.safeArea, { backgroundColor: theme.background }]}
       edges={['top', 'left', 'right']}>
-      <KeyboardAvoidingView
-        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-        style={styles.keyboardAvoid}>
-        {/* Header */}
-        <View style={styles.header}>
-          <ThemedText style={styles.headerTitle}>Report Item</ThemedText>
-          <ThemedText style={[styles.headerSubtitle, { color: theme.textSecondary }]}>
-            Submit a campus lost or found notice
-          </ThemedText>
-        </View>
+      <View style={styles.responsiveContainer}>
+        <KeyboardAvoidingView
+          behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+          style={styles.keyboardAvoid}>
+          {/* Header */}
+          <View style={styles.header}>
+            <ThemedText style={styles.headerTitle}>Report Item</ThemedText>
+            <ThemedText style={[styles.headerSubtitle, { color: theme.textSecondary }]}>
+              Submit a campus lost or found notice
+            </ThemedText>
+          </View>
 
         <ScrollView
           showsVerticalScrollIndicator={false}
@@ -516,7 +517,8 @@ export default function AddPostScreen() {
             />
           </View>
         </ScrollView>
-      </KeyboardAvoidingView>
+        </KeyboardAvoidingView>
+      </View>
     </SafeAreaView>
   );
 }
@@ -524,6 +526,12 @@ export default function AddPostScreen() {
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
+  },
+  responsiveContainer: {
+    flex: 1,
+    width: '100%',
+    maxWidth: MaxContentWidth,
+    alignSelf: 'center',
   },
   keyboardAvoid: {
     flex: 1,

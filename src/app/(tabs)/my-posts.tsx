@@ -18,7 +18,7 @@ import { useTheme } from '@/hooks/use-theme';
 import { StorageService } from '@/services/storage';
 import { APP_CONFIG } from '@/constants/config';
 import { ItemStatus, LostFoundItem } from '@/types/item';
-import { BorderRadius, ScreenPadding, Spacing } from '@/constants/theme';
+import { BorderRadius, MaxContentWidth, ScreenPadding, Spacing } from '@/constants/theme';
 import { Ionicons } from '@expo/vector-icons';
 
 export default function MyPostsScreen() {
@@ -108,13 +108,14 @@ export default function MyPostsScreen() {
     <SafeAreaView
       style={[styles.safeArea, { backgroundColor: theme.background }]}
       edges={['top', 'left', 'right']}>
-      {/* Screen Header */}
-      <View style={styles.header}>
-        <ThemedText style={styles.headerTitle}>My Reports</ThemedText>
-        <ThemedText style={[styles.headerSubtitle, { color: theme.textSecondary }]}>
-          Manage your lost and found listings
-        </ThemedText>
-      </View>
+      <View style={styles.responsiveContainer}>
+        {/* Screen Header */}
+        <View style={styles.header}>
+          <ThemedText style={styles.headerTitle}>My Reports</ThemedText>
+          <ThemedText style={[styles.headerSubtitle, { color: theme.textSecondary }]}>
+            Manage your lost and found listings
+          </ThemedText>
+        </View>
 
       {/* Segmented Tab Selector */}
       <View style={styles.tabContainer}>
@@ -280,18 +281,19 @@ export default function MyPostsScreen() {
         onCancel={() => setDeleteTarget(null)}
       />
 
-      {/* Animated Undo Toast */}
-      <Snackbar
-        visible={snackbarVisible}
-        message={snackbarMessage}
-        actionText="UNDO"
-        duration={APP_CONFIG.undoTimeoutMs}
-        onAction={handleUndoDelete}
-        onDismiss={() => {
-          setSnackbarVisible(false);
-          setDeletedBackup(null);
-        }}
-      />
+        {/* Animated Undo Toast */}
+        <Snackbar
+          visible={snackbarVisible}
+          message={snackbarMessage}
+          actionText="UNDO"
+          duration={APP_CONFIG.undoTimeoutMs}
+          onAction={handleUndoDelete}
+          onDismiss={() => {
+            setSnackbarVisible(false);
+            setDeletedBackup(null);
+          }}
+        />
+      </View>
     </SafeAreaView>
   );
 }
@@ -299,6 +301,12 @@ export default function MyPostsScreen() {
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
+  },
+  responsiveContainer: {
+    flex: 1,
+    width: '100%',
+    maxWidth: MaxContentWidth,
+    alignSelf: 'center',
   },
   header: {
     paddingHorizontal: ScreenPadding,
@@ -337,7 +345,7 @@ const styles = StyleSheet.create({
   listContent: {
     paddingHorizontal: ScreenPadding,
     paddingTop: Spacing.one,
-    paddingBottom: 80,
+    paddingBottom: 100,
   },
   postWrapper: {
     marginBottom: Spacing.four,

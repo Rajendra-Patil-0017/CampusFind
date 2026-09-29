@@ -23,7 +23,7 @@ import { APP_CONFIG } from '@/constants/config';
 import { CATEGORY_DETAILS, Category } from '@/constants/categories';
 import { LostFoundItem } from '@/types/item';
 import { formatDisplayDate, formatRelativeTime } from '@/utils/formatters';
-import { BorderRadius, ScreenPadding, Shadows, Spacing } from '@/constants/theme';
+import { BorderRadius, MaxContentWidth, ScreenPadding, Shadows, Spacing } from '@/constants/theme';
 import { Ionicons } from '@expo/vector-icons';
 
 export default function ItemDetailsScreen() {
@@ -136,19 +136,20 @@ export default function ItemDetailsScreen() {
     <SafeAreaView
       style={[styles.safeArea, { backgroundColor: theme.background }]}
       edges={['top', 'left', 'right']}>
-      <ScreenHeader
-        title="Notice Details"
-        showBack
-        rightAction={{
-          icon: 'share-outline',
-          onPress: handleShare,
-          label: 'Share',
-        }}
-      />
+      <View style={styles.responsiveContainer}>
+        <ScreenHeader
+          title="Notice Details"
+          showBack
+          rightAction={{
+            icon: 'share-outline',
+            onPress: handleShare,
+            label: 'Share',
+          }}
+        />
 
-      <ScrollView
-        showsVerticalScrollIndicator={false}
-        contentContainerStyle={styles.scrollContent}>
+        <ScrollView
+          showsVerticalScrollIndicator={false}
+          contentContainerStyle={styles.scrollContent}>
         {/* Photo Banner or Icon Placeholder */}
         {item.imageUri ? (
           <View style={[styles.imageContainer, Shadows.card]}>
@@ -341,21 +342,22 @@ export default function ItemDetailsScreen() {
         onCancel={() => setDeleteModalVisible(false)}
       />
 
-      {/* Resolve Confirmation Modal */}
-      <ConfirmDialog
-        visible={resolveModalVisible}
-        title={isResolved ? 'Re-open Notice?' : 'Mark as Resolved?'}
-        message={
-          isResolved
-            ? 'This notice will become active again and appear in main campus searches.'
-            : 'Marking this item as resolved indicates it has been successfully returned to its rightful owner.'
-        }
-        confirmText={isResolved ? 'Re-open' : 'Mark Resolved'}
-        cancelText="Cancel"
-        icon="checkmark-circle-outline"
-        onConfirm={handleToggleResolved}
-        onCancel={() => setResolveModalVisible(false)}
-      />
+        {/* Resolve Confirmation Modal */}
+        <ConfirmDialog
+          visible={resolveModalVisible}
+          title={isResolved ? 'Re-open Notice?' : 'Mark as Resolved?'}
+          message={
+            isResolved
+              ? 'This notice will become active again and appear in main campus searches.'
+              : 'Marking this item as resolved indicates it has been successfully returned to its rightful owner.'
+          }
+          confirmText={isResolved ? 'Re-open' : 'Mark Resolved'}
+          cancelText="Cancel"
+          icon="checkmark-circle-outline"
+          onConfirm={handleToggleResolved}
+          onCancel={() => setResolveModalVisible(false)}
+        />
+      </View>
     </SafeAreaView>
   );
 }
@@ -363,6 +365,12 @@ export default function ItemDetailsScreen() {
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
+  },
+  responsiveContainer: {
+    flex: 1,
+    width: '100%',
+    maxWidth: MaxContentWidth,
+    alignSelf: 'center',
   },
   scrollContent: {
     paddingHorizontal: ScreenPadding,

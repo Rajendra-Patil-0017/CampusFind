@@ -5,7 +5,7 @@ import { ThemedText } from '@/components/themed-text';
 import { ScreenHeader } from '@/components/ScreenHeader';
 import { useTheme } from '@/hooks/use-theme';
 import { APP_CONFIG } from '@/constants/config';
-import { BorderRadius, ScreenPadding, Shadows, Spacing } from '@/constants/theme';
+import { BorderRadius, MaxContentWidth, ScreenPadding, Shadows, Spacing } from '@/constants/theme';
 import { Ionicons } from '@expo/vector-icons';
 
 export default function AboutScreen() {
@@ -15,11 +15,12 @@ export default function AboutScreen() {
     <SafeAreaView
       style={[styles.safeArea, { backgroundColor: theme.background }]}
       edges={['top', 'left', 'right']}>
-      <ScreenHeader title="About CampusFind" showBack />
+      <View style={styles.responsiveContainer}>
+        <ScreenHeader title="About CampusFind" showBack />
 
-      <ScrollView
-        showsVerticalScrollIndicator={false}
-        contentContainerStyle={styles.scrollContent}>
+        <ScrollView
+          showsVerticalScrollIndicator={false}
+          contentContainerStyle={styles.scrollContent}>
         {/* Brand Banner */}
         <View
           style={[
@@ -121,6 +122,7 @@ export default function AboutScreen() {
           </ThemedText>
         </View>
       </ScrollView>
+      </View>
     </SafeAreaView>
   );
 }
@@ -128,6 +130,12 @@ export default function AboutScreen() {
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
+  },
+  responsiveContainer: {
+    flex: 1,
+    width: '100%',
+    maxWidth: MaxContentWidth,
+    alignSelf: 'center',
   },
   scrollContent: {
     paddingHorizontal: ScreenPadding,

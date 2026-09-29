@@ -21,7 +21,7 @@ import { useTheme } from '@/hooks/use-theme';
 import { StorageService } from '@/services/storage';
 import { FilterState, ItemSortOption, LostFoundItem } from '@/types/item';
 import { applyFiltersAndSort } from '@/utils/filters';
-import { BorderRadius, ScreenPadding, Shadows, Spacing } from '@/constants/theme';
+import { BorderRadius, MaxContentWidth, ScreenPadding, Shadows, Spacing } from '@/constants/theme';
 import { Ionicons } from '@expo/vector-icons';
 
 export default function HomeScreen() {
@@ -84,6 +84,7 @@ export default function HomeScreen() {
 
   const lostCount = items.filter((i) => i.type === 'lost' && i.status === 'active').length;
   const foundCount = items.filter((i) => i.type === 'found' && i.status === 'active').length;
+  const resolvedCount = items.filter((i) => i.status === 'resolved').length;
 
   const sortLabels: Record<ItemSortOption, string> = {
     newest: 'Newest First',
@@ -95,151 +96,157 @@ export default function HomeScreen() {
     <SafeAreaView
       style={[styles.safeArea, { backgroundColor: theme.background }]}
       edges={['top', 'left', 'right']}>
-      {/* Campus Notice Board Header */}
-      <View style={styles.header}>
-        <View style={styles.titleArea}>
-          <ThemedText style={styles.headerTitle}>CampusFind</ThemedText>
-          <ThemedText style={[styles.headerSubtitle, { color: theme.textSecondary }]}>
-            Find It. Report It. Return It.
-          </ThemedText>
+      <View style={styles.responsiveContainer}>
+        {/* Header with Title & Aligned Report Button */}
+        <View style={styles.header}>
+          <View style={styles.titleArea}>
+            <ThemedText style={styles.headerTitle}>CampusFind</ThemedText>
+            <ThemedText style={[styles.headerSubtitle, { color: theme.textSecondary }]}>
+              Find It. Report It. Return It.
+            </ThemedText>
+          </View>
+
+          <PrimaryButton
+            title="Report"
+            icon="add"
+            size="sm"
+            onPress={() => router.push('/(tabs)/add')}
+            style={styles.headerReportBtn}
+          />
         </View>
 
-        <PrimaryButton
-          title="Report"
-          icon="add"
-          size="sm"
-          onPress={() => router.push('/(tabs)/add')}
-        />
-      </View>
+        {/* Search Bar */}
+        <View style={styles.searchSection}>
+          <SearchBar
+            value={filters.searchQuery}
+            onChangeText={(text) => setFilters((prev) => ({ ...prev, searchQuery: text }))}
+            onClear={() => setFilters((prev) => ({ ...prev, searchQuery: '' }))}
+            showFilterButton
+            hasActiveFilters={hasActiveFilters}
+            onFilterPress={() => setSortModalVisible(true)}
+          />
+        </View>
 
-      {/* Search Input Bar */}
-      <View style={styles.searchSection}>
-        <SearchBar
-          value={filters.searchQuery}
-          onChangeText={(text) => setFilters((prev) => ({ ...prev, searchQuery: text }))}
-          onClear={() => setFilters((prev) => ({ ...prev, searchQuery: '' }))}
-          showFilterButton
-          hasActiveFilters={hasActiveFilters}
-          onFilterPress={() => setSortModalVisible(true)}
-        />
-      </View>
+        {/* Compact Filter Group */}
+        <View style={styles.filterRow}>
+          <FilterChip
+            label="All"
+            selected={filters.type === 'all' && filters.status === 'active'}
+            onPress={() => setFilters((prev) => ({ ...prev, type: 'all', status: 'active' }))}
+          />
+          <FilterChip
+            label="Lost"
+            icon="alert-circle-outline"
+            selected={filters.type === 'lost' && filters.status === 'active'}
+            count={lostCount}
+            tint="lost"
+            onPress={() =>
+              setFilters((prev) => ({
+                ...prev,
+                type: prev.type === 'lost' && prev.status === 'active' ? 'all' : 'lost',
+                status: 'active',
+              }))
+            }
+          />
+          <FilterChip
+            label="Found"
+            icon="checkmark-circle-outline"
+            selected={filters.type === 'found' && filters.status === 'active'}
+            count={foundCount}
+            tint="found"
+            onPress={() =>
+              setFilters((prev) => ({
+                ...prev,
+                type: prev.type === 'found' && prev.status === 'active' ? 'all' : 'found',
+                status: 'active',
+              }))
+            }
+          />
+          <FilterChip
+            label="Resolved"
+            icon="archive-outline"
+            selected={filters.status === 'resolved'}
+            count={resolvedCount}
+            onPress={() =>
+              setFilters((prev) => ({
+                ...prev,
+                status: prev.status === 'resolved' ? 'active' : 'resolved',
+              }))
+            }
+          />
+        </View>
 
-      {/* Notice Type Filter Chips */}
-      <View style={styles.filterRow}>
-        <FilterChip
-          label="All"
-          selected={filters.type === 'all'}
-          onPress={() => setFilters((prev) => ({ ...prev, type: 'all' }))}
-        />
-        <FilterChip
-          label="Lost"
-          icon="alert-circle-outline"
-          selected={filters.type === 'lost'}
-          count={lostCount}
-          tint="lost"
-          onPress={() =>
-            setFilters((prev) => ({
-              ...prev,
-              type: prev.type === 'lost' ? 'all' : 'lost',
-            }))
-          }
-        />
-        <FilterChip
-          label="Found"
-          icon="checkmark-circle-outline"
-          selected={filters.type === 'found'}
-          count={foundCount}
-          tint="found"
-          onPress={() =>
-            setFilters((prev) => ({
-              ...prev,
-              type: prev.type === 'found' ? 'all' : 'found',
-            }))
-          }
-        />
-        {/* Status Archive Filter */}
-        <FilterChip
-          label="Resolved"
-          icon="archive-outline"
-          selected={filters.status === 'resolved'}
-          onPress={() =>
-            setFilters((prev) => ({
-              ...prev,
-              status: prev.status === 'resolved' ? 'active' : 'resolved',
-            }))
-          }
-        />
-      </View>
+        {/* Category Horizontal Chips */}
+        <View style={styles.categorySection}>
+          <CategoryPicker
+            horizontal
+            includeAll
+            selectedCategory={filters.category}
+            onSelectCategory={(category) => setFilters((prev) => ({ ...prev, category }))}
+          />
+        </View>
 
-      {/* Horizontal Category Strip */}
-      <View style={styles.categorySection}>
-        <CategoryPicker
-          horizontal
-          includeAll
-          selectedCategory={filters.category}
-          onSelectCategory={(category) => setFilters((prev) => ({ ...prev, category }))}
-        />
-      </View>
-
-      {/* Active Filter Indicators / Results Meta */}
-      <View style={styles.metaRow}>
-        <ThemedText style={[styles.resultsCount, { color: theme.textSecondary }]}>
-          {filteredItems.length} {filteredItems.length === 1 ? 'item' : 'items'}
-          {filters.category !== 'all' ? ` in ${filters.category}` : ''}
-          {filters.status === 'resolved' ? ' (Resolved)' : ''}
-        </ThemedText>
-
-        <Pressable
-          onPress={() => setSortModalVisible(true)}
-          style={styles.sortButton}>
-          <ThemedText style={[styles.sortText, { color: theme.primary }]}>
-            {sortLabels[filters.sortBy]}
+        {/* Meta Bar with Count & Sort Trigger */}
+        <View style={styles.metaRow}>
+          <ThemedText style={[styles.resultsCount, { color: theme.textSecondary }]}>
+            {filteredItems.length} {filteredItems.length === 1 ? 'item' : 'items'}
+            {filters.category !== 'all' ? ` in ${filters.category}` : ''}
+            {filters.status === 'resolved' ? ' (Resolved)' : ''}
           </ThemedText>
-          <Ionicons name="chevron-down" size={14} color={theme.primary} />
-        </Pressable>
+
+          <Pressable
+            onPress={() => setSortModalVisible(true)}
+            hitSlop={8}
+            style={styles.sortButton}>
+            <ThemedText style={[styles.sortText, { color: theme.primary }]}>
+              {sortLabels[filters.sortBy]}
+            </ThemedText>
+            <Ionicons name="chevron-down" size={13} color={theme.primary} />
+          </Pressable>
+        </View>
+
+        {/* Listings Feed */}
+        {loading ? (
+          <LoadingState message="Loading campus bulletin..." />
+        ) : (
+          <FlatList
+            data={filteredItems}
+            keyExtractor={(item) => item.id}
+            renderItem={({ item }) => (
+              <ItemCard
+                item={item}
+                onPress={(selected) => router.push(`/item/${selected.id}` as any)}
+              />
+            )}
+            contentContainerStyle={styles.listContent}
+            showsVerticalScrollIndicator={false}
+            refreshControl={
+              <RefreshControl
+                refreshing={refreshing}
+                onRefresh={onRefresh}
+                tintColor={theme.primary}
+                colors={[theme.primary]}
+              />
+            }
+            ListEmptyComponent={
+              <EmptyState
+                icon="search-outline"
+                title="No Notices Found"
+                description={
+                  hasActiveFilters
+                    ? 'No notices match your current filters or search keywords.'
+                    : 'There are no active lost or found posts on campus right now.'
+                }
+                actionTitle={hasActiveFilters ? 'Clear Filters' : 'Report an Item'}
+                actionIcon={hasActiveFilters ? 'refresh-outline' : 'add'}
+                onAction={hasActiveFilters ? resetFilters : () => router.push('/(tabs)/add')}
+              />
+            }
+          />
+        )}
       </View>
 
-      {/* Main Listing Feed */}
-      {loading ? (
-        <LoadingState message="Loading campus bulletin..." />
-      ) : (
-        <FlatList
-          data={filteredItems}
-          keyExtractor={(item) => item.id}
-          renderItem={({ item }) => (
-            <ItemCard
-              item={item}
-              onPress={(selected) => router.push(`/item/${selected.id}` as any)}
-            />
-          )}
-          contentContainerStyle={styles.listContent}
-          showsVerticalScrollIndicator={false}
-          refreshControl={
-            <RefreshControl
-              refreshing={refreshing}
-              onRefresh={onRefresh}
-              tintColor={theme.primary}
-              colors={[theme.primary]}
-            />
-          }
-          ListEmptyComponent={
-            <EmptyState
-              icon="search-outline"
-              title="No Listings Found"
-              description={
-                hasActiveFilters
-                  ? 'No notices match your current filters or search keywords.'
-                  : 'There are no active lost or found posts on campus yet.'
-              }
-              actionTitle={hasActiveFilters ? 'Clear Filters' : 'Report an Item'}
-              actionIcon={hasActiveFilters ? 'refresh-outline' : 'add'}
-              onAction={hasActiveFilters ? resetFilters : () => router.push('/(tabs)/add')}
-            />
-          }
-        />
-      )}
-
-      {/* Sort & Filter Bottom Modal */}
+      {/* Sort & Filter Modal */}
       <Modal
         visible={sortModalVisible}
         transparent
@@ -314,7 +321,7 @@ export default function HomeScreen() {
                   styles.statusOptionBtn,
                   {
                     backgroundColor:
-                      filters.status === 'active' ? theme.primary : theme.background,
+                      filters.status === 'active' ? theme.primary : theme.elevatedSurface,
                     borderColor:
                       filters.status === 'active' ? theme.primary : theme.border,
                   },
@@ -338,7 +345,7 @@ export default function HomeScreen() {
                   styles.statusOptionBtn,
                   {
                     backgroundColor:
-                      filters.status === 'resolved' ? theme.resolved : theme.background,
+                      filters.status === 'resolved' ? theme.resolved : theme.elevatedSurface,
                     borderColor:
                       filters.status === 'resolved' ? theme.resolved : theme.border,
                   },
@@ -377,25 +384,36 @@ const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
   },
+  responsiveContainer: {
+    flex: 1,
+    width: '100%',
+    maxWidth: MaxContentWidth,
+    alignSelf: 'center',
+  },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
     paddingHorizontal: ScreenPadding,
     paddingTop: Spacing.two,
-    paddingBottom: Spacing.two,
+    paddingBottom: Spacing.one,
   },
   titleArea: {
     flex: 1,
   },
   headerTitle: {
-    fontSize: 22,
+    fontSize: 21,
     fontWeight: '800',
     letterSpacing: -0.4,
   },
   headerSubtitle: {
-    fontSize: 13,
+    fontSize: 12.5,
     marginTop: 1,
+  },
+  headerReportBtn: {
+    height: 38,
+    minHeight: 38,
+    paddingHorizontal: 14,
   },
   searchSection: {
     paddingHorizontal: ScreenPadding,
@@ -434,7 +452,7 @@ const styles = StyleSheet.create({
   },
   listContent: {
     paddingHorizontal: ScreenPadding,
-    paddingBottom: 80,
+    paddingBottom: 100,
   },
   modalOverlay: {
     flex: 1,

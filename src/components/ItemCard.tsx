@@ -46,7 +46,7 @@ export function ItemCard({ item, onPress, showStatus = true }: ItemCardProps) {
         {item.imageUri ? (
           <Image
             source={{ uri: item.imageUri }}
-            style={[styles.thumbnail, { backgroundColor: theme.background }]}
+            style={[styles.thumbnail, { backgroundColor: theme.background, borderColor: theme.border }]}
             contentFit="cover"
             transition={150}
           />
@@ -68,53 +68,55 @@ export function ItemCard({ item, onPress, showStatus = true }: ItemCardProps) {
         )}
       </View>
 
-      {/* Content Body */}
+      {/* Content Area with strict Information Hierarchy */}
       <View style={styles.content}>
-        {/* Top Badges & Timestamp */}
-        <View style={styles.topRow}>
-          <View style={styles.badgeGroup}>
-            <StatusBadge type={item.type} size="sm" />
-            {showStatus && isResolved && (
-              <StatusBadge status={item.status} size="sm" />
-            )}
-            <View
-              style={[
-                styles.categoryPill,
-                { backgroundColor: theme.background, borderColor: theme.border },
-              ]}>
-              <ThemedText style={[styles.categoryText, { color: theme.textSecondary }]}>
-                {item.category}
-              </ThemedText>
-            </View>
+        {/* 1. Item Title */}
+        <ThemedText style={[styles.title, { color: theme.text }]} numberOfLines={1}>
+          {item.name}
+        </ThemedText>
+
+        {/* 2. Status Badge and Category */}
+        <View style={styles.metaRow}>
+          <StatusBadge type={item.type} size="sm" />
+          {showStatus && isResolved && (
+            <StatusBadge status={item.status} size="sm" />
+          )}
+          <View
+            style={[
+              styles.categoryPill,
+              { backgroundColor: theme.elevatedSurface, borderColor: theme.border },
+            ]}>
+            <Ionicons name={categoryIcon} size={11} color={theme.textSecondary} style={{ marginRight: 3 }} />
+            <ThemedText style={[styles.categoryText, { color: theme.textSecondary }]}>
+              {item.category}
+            </ThemedText>
           </View>
+        </View>
+
+        {/* 3. Location and Date */}
+        <View style={styles.locationDateRow}>
+          <View style={styles.locationItem}>
+            <Ionicons name="location-outline" size={12} color={theme.textSecondary} style={{ marginRight: 3 }} />
+            <ThemedText
+              style={[styles.locationText, { color: theme.textSecondary }]}
+              numberOfLines={1}>
+              {item.location}
+            </ThemedText>
+          </View>
+          <ThemedText style={[styles.dotSeparator, { color: theme.textMuted }]}>•</ThemedText>
           <ThemedText style={[styles.timeText, { color: theme.textMuted }]}>
             {formatRelativeTime(item.createdAt)}
           </ThemedText>
         </View>
 
-        {/* Item Name */}
-        <ThemedText style={[styles.title, { color: theme.text }]} numberOfLines={1}>
-          {item.name}
-        </ThemedText>
-
-        {/* Short Description */}
+        {/* 4. Short Description */}
         {item.description ? (
           <ThemedText
             style={[styles.description, { color: theme.textSecondary }]}
             numberOfLines={2}>
-            {getTruncatedText(item.description, 90)}
+            {getTruncatedText(item.description, 95)}
           </ThemedText>
         ) : null}
-
-        {/* Location Row */}
-        <View style={styles.locationRow}>
-          <Ionicons name="location-outline" size={13} color={theme.textSecondary} />
-          <ThemedText
-            style={[styles.locationText, { color: theme.textSecondary }]}
-            numberOfLines={1}>
-            {item.location}
-          </ThemedText>
-        </View>
       </View>
     </Pressable>
   );
@@ -123,19 +125,21 @@ export function ItemCard({ item, onPress, showStatus = true }: ItemCardProps) {
 const styles = StyleSheet.create({
   card: {
     flexDirection: 'row',
-    borderRadius: BorderRadius.lg,
+    borderRadius: BorderRadius.md,
     borderWidth: 1,
     padding: Spacing.three,
-    marginBottom: Spacing.three,
+    marginBottom: Spacing.two + 2,
     alignItems: 'flex-start',
   },
   mediaContainer: {
     marginRight: Spacing.three,
+    marginTop: 2,
   },
   thumbnail: {
     width: 68,
     height: 68,
     borderRadius: BorderRadius.sm,
+    borderWidth: 1,
   },
   placeholder: {
     width: 68,
@@ -147,54 +151,61 @@ const styles = StyleSheet.create({
   },
   content: {
     flex: 1,
-    justifyContent: 'center',
-  },
-  topRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    marginBottom: 4,
-  },
-  badgeGroup: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 5,
-    flexWrap: 'wrap',
-  },
-  categoryPill: {
-    paddingHorizontal: 6,
-    paddingVertical: 1.5,
-    borderRadius: BorderRadius.xs,
-    borderWidth: 1,
-  },
-  categoryText: {
-    fontSize: 10,
-    fontWeight: '500',
-  },
-  timeText: {
-    fontSize: 11,
-    fontWeight: '500',
+    justifyContent: 'flex-start',
   },
   title: {
     fontSize: 15,
     fontWeight: '700',
     letterSpacing: -0.2,
-    marginBottom: 2,
+    marginBottom: 4,
+    lineHeight: 20,
   },
-  description: {
-    fontSize: 13,
-    lineHeight: 18,
-    marginBottom: 6,
-  },
-  locationRow: {
+  metaRow: {
     flexDirection: 'row',
     alignItems: 'center',
+    gap: 6,
+    flexWrap: 'wrap',
+    marginBottom: 5,
+  },
+  categoryPill: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 7,
+    paddingVertical: 2,
+    borderRadius: BorderRadius.xs,
+    borderWidth: 1,
+  },
+  categoryText: {
+    fontSize: 11,
+    fontWeight: '500',
+  },
+  locationDateRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    flexWrap: 'wrap',
+    marginBottom: 4,
     gap: 4,
-    marginTop: 2,
+  },
+  locationItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    flexShrink: 1,
   },
   locationText: {
     fontSize: 12,
     fontWeight: '500',
-    flex: 1,
+  },
+  dotSeparator: {
+    fontSize: 10,
+    marginHorizontal: 2,
+  },
+  timeText: {
+    fontSize: 11,
+    fontWeight: '500',
+  },
+  description: {
+    fontSize: 12.5,
+    lineHeight: 17,
+    marginTop: 1,
   },
 });
