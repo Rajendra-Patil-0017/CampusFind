@@ -2,6 +2,7 @@ import React from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
 import { router } from 'expo-router';
 import { ThemedText } from './themed-text';
+import { useAuth } from '@/context/auth';
 import { useTheme } from '@/hooks/use-theme';
 import { APP_CONFIG } from '@/constants/config';
 import { BorderRadius, Fonts, Spacing, Typography } from '@/constants/theme';
@@ -15,6 +16,7 @@ interface DesktopSidebarProps {
 
 export function DesktopSidebar({ activeRoute }: DesktopSidebarProps) {
   const theme = useTheme();
+  const { user, profile } = useAuth();
 
   const navItems: { route: DesktopNavRoute; label: string; icon: keyof typeof Ionicons.glyphMap; path: string }[] = [
     { route: 'bulletin', label: 'Campus Bulletin', icon: 'newspaper-outline', path: '/(tabs)' },
@@ -111,19 +113,32 @@ export function DesktopSidebar({ activeRoute }: DesktopSidebarProps) {
 
       {/* User Profile Footer */}
       <View style={[styles.userFooter, { borderTopColor: theme.border }]}>
-        <Pressable
-          onPress={() => router.push('/(tabs)/profile')}
-          style={styles.userProfileRow}>
-          <View style={[styles.avatarCircle, { backgroundColor: theme.primaryLight, borderColor: theme.border }]}>
-            <Ionicons name="person" size={16} color={theme.primary} />
-          </View>
-          <View style={styles.userTextCol}>
-            <ThemedText style={[styles.userName, { color: theme.text }]}>Campus Member</ThemedText>
-            <ThemedText style={[styles.userSub, { color: theme.textSecondary }]}>
-              Offline Local Storage
+        {user ? (
+          <Pressable
+            onPress={() => router.push('/(tabs)/profile')}
+            style={styles.userProfileRow}>
+            <View style={[styles.avatarCircle, { backgroundColor: theme.primaryLight, borderColor: theme.border }]}>
+              <Ionicons name="person" size={16} color={theme.primary} />
+            </View>
+            <View style={styles.userTextCol}>
+              <ThemedText style={[styles.userName, { color: theme.text }]} numberOfLines={1}>
+                {profile?.fullName || user.email?.split('@')[0] || 'Campus Member'}
+              </ThemedText>
+              <ThemedText style={[styles.userSub, { color: theme.textSecondary }]} numberOfLines={1}>
+                {user.email}
+              </ThemedText>
+            </View>
+          </Pressable>
+        ) : (
+          <Pressable
+            onPress={() => router.push('/(auth)/login' as any)}
+            style={[styles.signInPromptRow, { backgroundColor: theme.elevatedSurface, borderColor: theme.border }]}>
+            <Ionicons name="log-in-outline" size={16} color={theme.primary} />
+            <ThemedText style={[styles.signInPromptText, { color: theme.primary }]}>
+              Sign In to Cloud
             </ThemedText>
-          </View>
-        </Pressable>
+          </Pressable>
+        )}
       </View>
     </View>
   );
@@ -267,5 +282,19 @@ const styles = StyleSheet.create({
   userSub: {
     fontSize: 11,
     marginTop: 1,
+  },
+  signInPromptRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 9,
+    paddingHorizontal: 12,
+    borderRadius: BorderRadius.md,
+    borderWidth: 1,
+    gap: 8,
+  },
+  signInPromptText: {
+    fontSize: 12,
+    fontWeight: '700',
   },
 });

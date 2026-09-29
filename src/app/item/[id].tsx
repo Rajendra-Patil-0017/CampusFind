@@ -20,6 +20,7 @@ import { LoadingState } from '@/components/LoadingState';
 import { EmptyState } from '@/components/EmptyState';
 import { DesktopSidebar } from '@/components/DesktopSidebar';
 import { DesktopHeader } from '@/components/DesktopHeader';
+import { useAuth } from '@/context/auth';
 import { useTheme } from '@/hooks/use-theme';
 import { StorageService } from '@/services/storage';
 import { APP_CONFIG } from '@/constants/config';
@@ -34,6 +35,7 @@ export default function ItemDetailsScreen() {
   const { width } = useWindowDimensions();
   const isDesktop = width >= 880;
   const { id } = useLocalSearchParams<{ id: string }>();
+  const { user } = useAuth();
 
   const [item, setItem] = useState<LostFoundItem | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
@@ -61,7 +63,10 @@ export default function ItemDetailsScreen() {
     }, [loadItem])
   );
 
-  const isOwner = item?.ownerId === APP_CONFIG.localUserId;
+  const isOwner =
+    (user && item?.ownerId === user.id) ||
+    item?.ownerId === APP_CONFIG.localUserId ||
+    (!user && item?.ownerId === APP_CONFIG.localUserId);
 
   const handleShare = async () => {
     if (!item) return;

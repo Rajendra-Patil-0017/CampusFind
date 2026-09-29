@@ -20,6 +20,7 @@ import { CategoryPicker } from '@/components/CategoryPicker';
 import { LoadingState } from '@/components/LoadingState';
 import { DesktopSidebar } from '@/components/DesktopSidebar';
 import { DesktopHeader } from '@/components/DesktopHeader';
+import { useAuth } from '@/context/auth';
 import { useTheme } from '@/hooks/use-theme';
 import { StorageService } from '@/services/storage';
 import { ItemFormData, validateItemForm, ValidationErrors } from '@/utils/validation';
@@ -31,6 +32,7 @@ export default function EditPostScreen() {
   const { width } = useWindowDimensions();
   const isDesktop = width >= 880;
   const { id } = useLocalSearchParams<{ id: string }>();
+  const { user } = useAuth();
 
   const [loading, setLoading] = useState<boolean>(true);
   const [formData, setFormData] = useState<ItemFormData>({
@@ -128,17 +130,21 @@ export default function EditPostScreen() {
 
     setIsSubmitting(true);
     try {
-      await StorageService.updateItem(id, {
-        type: formData.type,
-        name: formData.name.trim(),
-        description: formData.description.trim(),
-        category: formData.category,
-        location: formData.location.trim(),
-        date: new Date(formData.date).toISOString(),
-        contactName: formData.contactName.trim(),
-        contactInfo: formData.contactInfo.trim(),
-        imageUri: formData.imageUri,
-      });
+      await StorageService.updateItem(
+        id,
+        {
+          type: formData.type,
+          name: formData.name.trim(),
+          description: formData.description.trim(),
+          category: formData.category,
+          location: formData.location.trim(),
+          date: new Date(formData.date).toISOString(),
+          contactName: formData.contactName.trim(),
+          contactInfo: formData.contactInfo.trim(),
+          imageUri: formData.imageUri,
+        },
+        user?.id
+      );
 
       router.back();
     } catch (e) {

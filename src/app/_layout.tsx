@@ -1,13 +1,14 @@
 import React from 'react';
 import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
+import { AuthProvider } from '@/context/auth';
 import { useTheme } from '@/hooks/use-theme';
 
 export default function RootLayout() {
   const theme = useTheme();
 
   return (
-    <>
+    <AuthProvider>
       <StatusBar style="dark" />
       <Stack
         screenOptions={{
@@ -16,6 +17,7 @@ export default function RootLayout() {
           animation: 'slide_from_right',
         }}>
         <Stack.Screen name="index" options={{ headerShown: false, animation: 'fade' }} />
+        <Stack.Screen name="(auth)" options={{ headerShown: false }} />
         <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
         <Stack.Screen
           name="item/[id]"
@@ -39,6 +41,6 @@ export default function RootLayout() {
           }}
         />
       </Stack>
-    </>
+    </AuthProvider>
   );
 }

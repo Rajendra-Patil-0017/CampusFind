@@ -1,6 +1,7 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { APP_CONFIG } from '@/constants/config';
 import { LostFoundItem } from '@/types/item';
+import { ItemsService } from './items';
 
 export const SAMPLE_ITEMS: LostFoundItem[] = [
   {
@@ -92,190 +93,33 @@ export function generateItemId(): string {
 }
 
 export const StorageService = {
-  async getItems(): Promise<LostFoundItem[]> {
-    try {
-      const initialized = await AsyncStorage.getItem(APP_CONFIG.storageKeyInitialized);
-      if (!initialized) {
-        await AsyncStorage.setItem(
-          APP_CONFIG.storageKeyItems,
-          JSON.stringify(SAMPLE_ITEMS)
-        );
-        await AsyncStorage.setItem(APP_CONFIG.storageKeyInitialized, 'true');
-        return SAMPLE_ITEMS;
-      }
-
-      const json = await AsyncStorage.getItem(APP_CONFIG.storageKeyItems);
-      if (!json) {
-        return [];
-      }
-
-      const parsed = JSON.parse(json);
-      if (!Array.isArray(parsed)) {
-        return [];
-      }
-      return parsed;
-    } catch (error) {
-      console.warn('StorageService.getItems error:', error);
-      return [];
-    }
-  },
-
-  async getItemById(id: string): Promise<LostFoundItem | null> {
-    try {
-      const items = await this.getItems();
-      return items.find((item) => item.id === id) || null;
-    } catch (error) {
-      console.warn(`StorageService.getItemById(${id}) error:`, error);
-      return null;
-    }
-  },
-
-  async saveItems(items: LostFoundItem[]): Promise<boolean> {
-    try {
-      await AsyncStorage.setItem(APP_CONFIG.storageKeyItems, JSON.stringify(items));
-      return true;
-    } catch (error) {
-      console.warn('StorageService.saveItems error:', error);
-      return false;
-    }
-  },
-
-  async createItem(
-    itemData: Omit<LostFoundItem, 'id' | 'createdAt' | 'updatedAt' | 'ownerId' | 'status'> &
-      Partial<Pick<LostFoundItem, 'ownerId' | 'status'>>
-  ): Promise<LostFoundItem> {
-    const now = new Date().toISOString();
-    const newItem: LostFoundItem = {
-      ...itemData,
-      id: generateItemId(),
-      status: itemData.status || 'active',
-      ownerId: itemData.ownerId || APP_CONFIG.localUserId,
-      createdAt: now,
-      updatedAt: now,
-      isSample: false,
-    };
-
-    const items = await this.getItems();
-    const updatedItems = [newItem, ...items];
-    await this.saveItems(updatedItems);
-    return newItem;
-  },
-
-  async updateItem(id: string, updates: Partial<LostFoundItem>): Promise<LostFoundItem | null> {
-    try {
-      const items = await this.getItems();
-      const index = items.findIndex((item) => item.id === id);
-      if (index === -1) {
-        return null;
-      }
-
-      const updatedItem: LostFoundItem = {
-        ...items[index],
-        ...updates,
-        id: items[index].id, // preserve id
-        createdAt: items[index].createdAt, // preserve createdAt
-        updatedAt: new Date().toISOString(),
-      };
-
-      items[index] = updatedItem;
-      await this.saveItems(items);
-      return updatedItem;
-    } catch (error) {
-      console.warn(`StorageService.updateItem(${id}) error:`, error);
-      return null;
-    }
-  },
-
-  async deleteItem(id: string): Promise<boolean> {
-    try {
-      const items = await this.getItems();
-      const filtered = items.filter((item) => item.id !== id);
-      if (filtered.length === items.length) {
-        return false;
-      }
-      return await this.saveItems(filtered);
-    } catch (error) {
-      console.warn(`StorageService.deleteItem(${id}) error:`, error);
-      return false;
-    }
-  },
+  getItems: ItemsService.getItems.bind(ItemsService),
+  getItemById: ItemsService.getItemById.bind(ItemsService),
+  createItem: (itemData: Omit<LostFoundItem, 'id' | 'createdAt' | 'updatedAt'>, userId?: string) =>
+    ItemsService.createItem(itemData, userId || APP_CONFIG.localUserId),
+  updateItem: (id: string, updates: Partial<LostFoundItem>, userId?: string) =>
+    ItemsService.updateItem(id, updates, userId),
+  deleteItem: ItemsService.deleteItem.bind(ItemsService),
+  migrateLocalReportsToSupabase: ItemsService.migrateLocalReportsToSupabase.bind(ItemsService),
 
   async exportData(): Promise<string> {
     const items = await this.getItems();
-    return JSON.stringify(
-      {
-        appName: APP_CONFIG.name,
-        version: APP_CONFIG.version,
-        exportDate: new Date().toISOString(),
-        itemsCount: items.length,
-        items,
-      },
-      null,
-      2
+    const exportPayload = {
+      exportVersion: '1.0',
+      exportedAt: new Date().toISOString(),
+      appName: APP_CONFIG.name,
+      totalCount: items.length,
+      items,
+    };
+    return JSON.stringify(exportPayload, null, 2);
+  },
+
+  async resetToSamples(): Promise<LostFoundItem[]> {
+    await AsyncStorage.setItem(
+      APP_CONFIG.storageKeyItems,
+      JSON.stringify(SAMPLE_ITEMS)
     );
-  },
-
-  async importData(jsonString: string): Promise<{ success: boolean; count: number; error?: string }> {
-    try {
-      const parsed = JSON.parse(jsonString);
-      const itemsToImport = Array.isArray(parsed) ? parsed : parsed.items;
-      if (!Array.isArray(itemsToImport)) {
-        return { success: false, count: 0, error: 'Invalid backup file format' };
-      }
-
-      // Validate basic structure of imported items
-      const validItems: LostFoundItem[] = [];
-      for (const item of itemsToImport) {
-        if (
-          item &&
-          typeof item.id === 'string' &&
-          (item.type === 'lost' || item.type === 'found') &&
-          typeof item.name === 'string' &&
-          typeof item.description === 'string' &&
-          typeof item.category === 'string' &&
-          typeof item.location === 'string'
-        ) {
-          validItems.push({
-            id: item.id || generateItemId(),
-            type: item.type,
-            status: item.status === 'resolved' ? 'resolved' : 'active',
-            name: item.name,
-            description: item.description,
-            category: item.category,
-            location: item.location,
-            date: item.date || new Date().toISOString(),
-            contactName: item.contactName || 'Anonymous',
-            contactInfo: item.contactInfo || 'Not specified',
-            imageUri: item.imageUri,
-            createdAt: item.createdAt || new Date().toISOString(),
-            updatedAt: item.updatedAt || new Date().toISOString(),
-            ownerId: item.ownerId || APP_CONFIG.localUserId,
-            isSample: !!item.isSample,
-          });
-        }
-      }
-
-      if (validItems.length === 0) {
-        return { success: false, count: 0, error: 'No valid items found in backup file' };
-      }
-
-      // Merge avoiding duplicates by id
-      const currentItems = await this.getItems();
-      const currentMap = new Map(currentItems.map((item) => [item.id, item]));
-      for (const validItem of validItems) {
-        currentMap.set(validItem.id, validItem);
-      }
-
-      const mergedList = Array.from(currentMap.values());
-      await this.saveItems(mergedList);
-      return { success: true, count: validItems.length };
-    } catch (e: any) {
-      return { success: false, count: 0, error: e?.message || 'Failed to parse JSON backup' };
-    }
-  },
-
-  async resetToSamples(): Promise<void> {
-    await AsyncStorage.setItem(APP_CONFIG.storageKeyItems, JSON.stringify(SAMPLE_ITEMS));
     await AsyncStorage.setItem(APP_CONFIG.storageKeyInitialized, 'true');
+    return SAMPLE_ITEMS;
   },
 };

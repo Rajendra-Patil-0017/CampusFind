@@ -17,6 +17,7 @@ import { ConfirmDialog } from '@/components/ConfirmDialog';
 import { Snackbar } from '@/components/Snackbar';
 import { DesktopSidebar } from '@/components/DesktopSidebar';
 import { DesktopHeader } from '@/components/DesktopHeader';
+import { useAuth } from '@/context/auth';
 import { useTheme } from '@/hooks/use-theme';
 import { StorageService } from '@/services/storage';
 import { APP_CONFIG } from '@/constants/config';
@@ -28,6 +29,7 @@ export default function MyPostsScreen() {
   const theme = useTheme();
   const { width } = useWindowDimensions();
   const isDesktop = width >= 880;
+  const { user } = useAuth();
 
   const [posts, setPosts] = useState<LostFoundItem[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
@@ -43,7 +45,10 @@ export default function MyPostsScreen() {
   const loadMyPosts = useCallback(async () => {
     try {
       const allItems = await StorageService.getItems();
-      const myItems = allItems.filter((item) => item.ownerId === APP_CONFIG.localUserId);
+      const currentUserId = user?.id || APP_CONFIG.localUserId;
+      const myItems = allItems.filter(
+        (item) => item.ownerId === currentUserId || (!user && item.ownerId === APP_CONFIG.localUserId)
+      );
       setPosts(myItems);
     } catch (e) {
       console.warn('Failed to load user posts:', e);
@@ -51,7 +56,7 @@ export default function MyPostsScreen() {
       setLoading(false);
       setRefreshing(false);
     }
-  }, []);
+  }, [user]);
 
   useFocusEffect(
     useCallback(() => {

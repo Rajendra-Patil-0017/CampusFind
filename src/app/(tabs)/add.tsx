@@ -18,8 +18,10 @@ import { PrimaryButton } from '@/components/PrimaryButton';
 import { CategoryPicker } from '@/components/CategoryPicker';
 import { DesktopSidebar } from '@/components/DesktopSidebar';
 import { DesktopHeader } from '@/components/DesktopHeader';
+import { useAuth } from '@/context/auth';
 import { useTheme } from '@/hooks/use-theme';
 import { StorageService } from '@/services/storage';
+import { APP_CONFIG } from '@/constants/config';
 import { ItemFormData, validateItemForm, ValidationErrors } from '@/utils/validation';
 import { BorderRadius, Fonts, MaxContentWidth, ScreenPadding, Spacing } from '@/constants/theme';
 import { Ionicons } from '@expo/vector-icons';
@@ -37,18 +39,19 @@ export default function AddPostScreen() {
   const theme = useTheme();
   const { width } = useWindowDimensions();
   const isDesktop = width >= 880;
+  const { user, profile } = useAuth();
 
-  const [formData, setFormData] = useState<ItemFormData>({
+  const [formData, setFormData] = useState<ItemFormData>(() => ({
     type: 'lost',
     name: '',
     description: '',
     category: '',
     location: '',
     date: new Date().toISOString().split('T')[0],
-    contactName: '',
-    contactInfo: '',
+    contactName: profile?.fullName || user?.email?.split('@')[0] || '',
+    contactInfo: user?.email || '',
     imageUri: undefined,
-  });
+  }));
 
   const [errors, setErrors] = useState<ValidationErrors>({});
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
@@ -101,17 +104,22 @@ export default function AddPostScreen() {
 
     setIsSubmitting(true);
     try {
-      const created = await StorageService.createItem({
-        type: formData.type,
-        name: formData.name.trim(),
-        description: formData.description.trim(),
-        category: formData.category,
-        location: formData.location.trim(),
-        date: new Date(formData.date).toISOString(),
-        contactName: formData.contactName.trim(),
-        contactInfo: formData.contactInfo.trim(),
-        imageUri: formData.imageUri,
-      });
+      const created = await StorageService.createItem(
+        {
+          type: formData.type,
+          name: formData.name.trim(),
+          description: formData.description.trim(),
+          category: formData.category,
+          location: formData.location.trim(),
+          date: new Date(formData.date).toISOString(),
+          contactName: formData.contactName.trim(),
+          contactInfo: formData.contactInfo.trim(),
+          imageUri: formData.imageUri,
+          status: 'active',
+          ownerId: user?.id || APP_CONFIG.localUserId,
+        },
+        user?.id || APP_CONFIG.localUserId
+      );
 
       // Reset form
       setFormData({

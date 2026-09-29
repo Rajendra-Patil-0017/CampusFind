@@ -17,6 +17,8 @@ import { ConfirmDialog } from '@/components/ConfirmDialog';
 import { Snackbar } from '@/components/Snackbar';
 import { DesktopSidebar } from '@/components/DesktopSidebar';
 import { DesktopHeader } from '@/components/DesktopHeader';
+import { PrimaryButton } from '@/components/PrimaryButton';
+import { useAuth } from '@/context/auth';
 import { useTheme } from '@/hooks/use-theme';
 import { StorageService } from '@/services/storage';
 import { APP_CONFIG } from '@/constants/config';
@@ -28,9 +30,13 @@ export default function ProfileScreen() {
   const theme = useTheme();
   const { width } = useWindowDimensions();
   const isDesktop = width >= 880;
+  const { user, profile, signOut, isConfigured } = useAuth();
 
   const [items, setItems] = useState<LostFoundItem[]>([]);
   const [resetModalVisible, setResetModalVisible] = useState<boolean>(false);
+  const [migrateModalVisible, setMigrateModalVisible] = useState<boolean>(false);
+  const [signOutModalVisible, setSignOutModalVisible] = useState<boolean>(false);
+  const [isMigrating, setIsMigrating] = useState<boolean>(false);
   const [snackbarMessage, setSnackbarMessage] = useState<string>('');
   const [snackbarVisible, setSnackbarVisible] = useState<boolean>(false);
 
@@ -49,7 +55,10 @@ export default function ProfileScreen() {
     }, [loadStats])
   );
 
-  const myPosts = items.filter((i) => i.ownerId === APP_CONFIG.localUserId);
+  const currentUserId = user?.id || APP_CONFIG.localUserId;
+  const myPosts = items.filter(
+    (i) => i.ownerId === currentUserId || (!user && i.ownerId === APP_CONFIG.localUserId)
+  );
   const activeLost = items.filter((i) => i.type === 'lost' && i.status === 'active').length;
   const activeFound = items.filter((i) => i.type === 'found' && i.status === 'active').length;
   const resolvedTotal = items.filter((i) => i.status === 'resolved').length;
@@ -101,6 +110,37 @@ export default function ProfileScreen() {
     setSnackbarVisible(true);
   };
 
+  const handleMigrateReports = async () => {
+    if (!user) {
+      setMigrateModalVisible(false);
+      router.push('/(auth)/login' as any);
+      return;
+    }
+
+    setIsMigrating(true);
+    try {
+      const results = await StorageService.migrateLocalReportsToSupabase(user.id);
+      setMigrateModalVisible(false);
+      loadStats();
+      setSnackbarMessage(
+        `Migration complete: ${results.migratedCount} uploaded, ${results.skippedCount} existing, ${results.failedCount} failed.`
+      );
+      setSnackbarVisible(true);
+    } catch (e: any) {
+      Alert.alert('Migration Error', e?.message || 'Failed to transfer reports to cloud.');
+    } finally {
+      setIsMigrating(false);
+    }
+  };
+
+  const handleSignOut = async () => {
+    await signOut();
+    setSignOutModalVisible(false);
+    loadStats();
+    setSnackbarMessage('Signed out successfully.');
+    setSnackbarVisible(true);
+  };
+
   const renderContent = () => (
     <View style={styles.responsiveContainer}>
       {/* Header */}
@@ -114,7 +154,7 @@ export default function ProfileScreen() {
       <ScrollView
         showsVerticalScrollIndicator={false}
         contentContainerStyle={styles.scrollContent}>
-        {/* User Profile Card */}
+        {/* User Account / Profile Card */}
         <View
           style={[
             styles.userCard,
@@ -132,21 +172,75 @@ export default function ProfileScreen() {
                 borderColor: theme.border,
               },
             ]}>
-            <Ionicons name="school-outline" size={26} color={theme.primary} />
+            <Ionicons name="school" size={26} color={theme.primary} />
           </View>
           <View style={styles.userInfo}>
-            <ThemedText style={styles.userName}>Campus Member</ThemedText>
+            <ThemedText style={styles.userName}>
+              {profile?.fullName || (user ? user.email?.split('@')[0] : 'Campus Guest')}
+            </ThemedText>
             <ThemedText style={[styles.userRole, { color: theme.textSecondary }]}>
-              Device: {APP_CONFIG.localUserId}
+              {user ? user.email : 'Local Guest Mode (Offline Only)'}
             </ThemedText>
             <View style={styles.offlineBadge}>
-              <View style={[styles.offlineDot, { backgroundColor: theme.teal }]} />
+              <View
+                style={[
+                  styles.offlineDot,
+                  { backgroundColor: user ? theme.found : theme.teal },
+                ]}
+              />
               <ThemedText style={[styles.offlineText, { color: theme.textSecondary }]}>
-                Offline-First Storage Active
+                {user ? 'Cloud Database Connected' : 'Offline Local Storage Active'}
               </ThemedText>
             </View>
           </View>
+
+          {user ? (
+            <Pressable
+              onPress={() => setSignOutModalVisible(true)}
+              style={[styles.signOutSmallBtn, { borderColor: theme.border, backgroundColor: theme.elevatedSurface }]}>
+              <Ionicons name="log-out-outline" size={16} color={theme.danger} />
+              <ThemedText style={[styles.signOutSmallText, { color: theme.danger }]}>
+                Sign Out
+              </ThemedText>
+            </Pressable>
+          ) : (
+            <Pressable
+              onPress={() => router.push('/(auth)/login' as any)}
+              style={[styles.signInSmallBtn, { backgroundColor: theme.primary }]}>
+              <Ionicons name="log-in-outline" size={14} color="#FFFFFF" />
+              <ThemedText style={styles.signInSmallText}>Sign In</ThemedText>
+            </Pressable>
+          )}
         </View>
+
+        {/* Phase 7 Cloud Migration Banner (if user is logged in or wants to sync) */}
+        {user && (
+          <View
+            style={[
+              styles.migrationBanner,
+              { backgroundColor: theme.primaryLight, borderColor: theme.border },
+              Shadows.subtle,
+            ]}>
+            <View style={styles.migrationIcon}>
+              <Ionicons name="cloud-upload" size={22} color={theme.primary} />
+            </View>
+            <View style={styles.migrationContent}>
+              <ThemedText style={[styles.migrationTitle, { color: theme.text }]}>
+                Sync Local Reports to Cloud
+              </ThemedText>
+              <ThemedText style={[styles.migrationDesc, { color: theme.textSecondary }]}>
+                Transfer any reports created locally on this device to your Supabase cloud account.
+              </ThemedText>
+            </View>
+            <PrimaryButton
+              title="Sync Now"
+              size="sm"
+              icon="sync-outline"
+              loading={isMigrating}
+              onPress={() => setMigrateModalVisible(true)}
+            />
+          </View>
+        )}
 
         {/* Campus Activity Stats */}
         <ThemedText style={[styles.sectionHeading, { color: theme.textSecondary }]}>
@@ -294,7 +388,7 @@ export default function ProfileScreen() {
 
         <View style={styles.footerNote}>
           <ThemedText style={[styles.footerText, { color: theme.textMuted }]}>
-            CampusFind v{APP_CONFIG.version} • Offline Local Storage
+            CampusFind v{APP_CONFIG.version} • {isConfigured ? 'Supabase Backend Connected' : 'Offline Local Storage'}
           </ThemedText>
         </View>
       </ScrollView>
@@ -312,13 +406,38 @@ export default function ProfileScreen() {
         onCancel={() => setResetModalVisible(false)}
       />
 
-        {/* Snackbar */}
-        <Snackbar
-          visible={snackbarVisible}
-          message={snackbarMessage}
-          onDismiss={() => setSnackbarVisible(false)}
-        />
-      </View>
+      {/* Migration Confirmation Dialog */}
+      <ConfirmDialog
+        visible={migrateModalVisible}
+        title="Upload Local Reports to Cloud?"
+        message="This will scan your device for locally created lost and found reports and upload them to your Supabase account. Existing cloud reports will not be duplicated."
+        confirmText="Upload & Sync"
+        cancelText="Cancel"
+        icon="cloud-upload-outline"
+        onConfirm={handleMigrateReports}
+        onCancel={() => setMigrateModalVisible(false)}
+      />
+
+      {/* Sign Out Confirmation Dialog */}
+      <ConfirmDialog
+        visible={signOutModalVisible}
+        title="Sign Out?"
+        message="Are you sure you want to sign out? You can continue using the application in guest mode."
+        confirmText="Sign Out"
+        cancelText="Cancel"
+        isDestructive
+        icon="log-out-outline"
+        onConfirm={handleSignOut}
+        onCancel={() => setSignOutModalVisible(false)}
+      />
+
+      {/* Snackbar */}
+      <Snackbar
+        visible={snackbarVisible}
+        message={snackbarMessage}
+        onDismiss={() => setSnackbarVisible(false)}
+      />
+    </View>
   );
 
   return (
@@ -425,6 +544,60 @@ const styles = StyleSheet.create({
     fontSize: 11,
     fontWeight: '500',
   },
+  signInSmallBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 6,
+    paddingHorizontal: 12,
+    borderRadius: BorderRadius.md,
+    gap: 4,
+  },
+  signInSmallText: {
+    fontSize: 12,
+    fontWeight: '700',
+    color: '#FFFFFF',
+  },
+  signOutSmallBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 6,
+    paddingHorizontal: 10,
+    borderRadius: BorderRadius.md,
+    borderWidth: 1,
+    gap: 4,
+  },
+  signOutSmallText: {
+    fontSize: 12,
+    fontWeight: '700',
+  },
+  migrationBanner: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: Spacing.four,
+    borderRadius: BorderRadius.lg,
+    borderWidth: 1,
+    marginBottom: Spacing.three,
+    gap: 12,
+  },
+  migrationIcon: {
+    width: 38,
+    height: 38,
+    borderRadius: BorderRadius.md,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  migrationContent: {
+    flex: 1,
+  },
+  migrationTitle: {
+    fontSize: 14,
+    fontWeight: '700',
+    marginBottom: 2,
+  },
+  migrationDesc: {
+    fontSize: 12,
+    lineHeight: 16,
+  },
   sectionHeading: {
     fontSize: 11,
     fontWeight: '700',
@@ -451,24 +624,25 @@ const styles = StyleSheet.create({
   },
   statLabel: {
     fontSize: 11,
-    fontWeight: '500',
+    fontWeight: '600',
     marginTop: 2,
     textAlign: 'center',
   },
   actionGroup: {
     borderRadius: BorderRadius.lg,
     borderWidth: 1,
+    marginBottom: Spacing.three,
     overflow: 'hidden',
   },
   actionItem: {
     flexDirection: 'row',
     alignItems: 'center',
-    padding: Spacing.three,
+    padding: Spacing.three + 2,
   },
   actionIconCircle: {
     width: 36,
     height: 36,
-    borderRadius: BorderRadius.md,
+    borderRadius: BorderRadius.full,
     alignItems: 'center',
     justifyContent: 'center',
     marginRight: Spacing.three,
@@ -482,7 +656,7 @@ const styles = StyleSheet.create({
   },
   actionItemDesc: {
     fontSize: 12,
-    marginTop: 1,
+    marginTop: 2,
   },
   rowDivider: {
     height: 1,
@@ -490,11 +664,9 @@ const styles = StyleSheet.create({
   },
   footerNote: {
     alignItems: 'center',
-    marginTop: Spacing.six,
-    marginBottom: Spacing.four,
+    marginTop: Spacing.four,
   },
   footerText: {
     fontSize: 12,
-    fontWeight: '500',
   },
 });
