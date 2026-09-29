@@ -1,63 +1,117 @@
-import * as Device from 'expo-device';
-import { Platform, StyleSheet } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
-
-import { AnimatedIcon } from '@/components/animated-icon';
-import { HintRow } from '@/components/hint-row';
+import React, { useEffect, useState } from 'react';
+import {
+  Animated,
+  StyleSheet,
+  View,
+} from 'react-native';
+import { router } from 'expo-router';
 import { ThemedText } from '@/components/themed-text';
-import { ThemedView } from '@/components/themed-view';
-import { WebBadge } from '@/components/web-badge';
-import { BottomTabInset, MaxContentWidth, Spacing } from '@/constants/theme';
+import { useTheme } from '@/hooks/use-theme';
+import { APP_CONFIG } from '@/constants/config';
+import { StorageService } from '@/services/storage';
+import { BorderRadius, Spacing } from '@/constants/theme';
+import { Ionicons } from '@expo/vector-icons';
 
-function getDevMenuHint() {
-  if (Platform.OS === 'web') {
-    return <ThemedText type="small">use browser devtools</ThemedText>;
-  }
-  if (Device.isDevice) {
-    return (
-      <ThemedText type="small">
-        shake device or press <ThemedText type="code">m</ThemedText> in terminal
-      </ThemedText>
+export default function SplashScreen() {
+  const theme = useTheme();
+  const [fadeAnim] = useState(() => new Animated.Value(0));
+  const [scaleAnim] = useState(() => new Animated.Value(0.92));
+  const [pulseAnim] = useState(() => new Animated.Value(1));
+
+  useEffect(() => {
+    Animated.parallel([
+      Animated.timing(fadeAnim, {
+        toValue: 1,
+        duration: 450,
+        useNativeDriver: true,
+      }),
+      Animated.spring(scaleAnim, {
+        toValue: 1,
+        friction: 7,
+        tension: 40,
+        useNativeDriver: true,
+      }),
+    ]).start();
+
+    const pulseLoop = Animated.loop(
+      Animated.sequence([
+        Animated.timing(pulseAnim, {
+          toValue: 1.05,
+          duration: 650,
+          useNativeDriver: true,
+        }),
+        Animated.timing(pulseAnim, {
+          toValue: 1,
+          duration: 650,
+          useNativeDriver: true,
+        }),
+      ])
     );
-  }
-  const shortcut = Platform.OS === 'android' ? 'cmd+m (or ctrl+m)' : 'cmd+d';
-  return (
-    <ThemedText type="small">
-      press <ThemedText type="code">{shortcut}</ThemedText>
-    </ThemedText>
-  );
-}
+    pulseLoop.start();
 
-export default function HomeScreen() {
-  return (
-    <ThemedView style={styles.container}>
-      <SafeAreaView style={styles.safeArea}>
-        <ThemedView style={styles.heroSection}>
-          <AnimatedIcon />
-          <ThemedText type="title" style={styles.title}>
-            Welcome to&nbsp;Expo
-          </ThemedText>
-        </ThemedView>
+    let isMounted = true;
+    const prepareApp = async () => {
+      try {
+        await StorageService.getItems();
+      } catch (e) {
+        console.warn('Splash prepare error:', e);
+      }
 
-        <ThemedText type="code" style={styles.code}>
-          get started
+      setTimeout(() => {
+        if (isMounted) {
+          pulseLoop.stop();
+          router.replace('/(tabs)' as any);
+        }
+      }, 1100);
+    };
+
+    prepareApp();
+
+    return () => {
+      isMounted = false;
+      pulseLoop.stop();
+    };
+  }, [fadeAnim, scaleAnim, pulseAnim]);
+
+  return (
+    <View style={[styles.container, { backgroundColor: theme.background }]}>
+      <Animated.View
+        style={[
+          styles.content,
+          {
+            opacity: fadeAnim,
+            transform: [{ scale: scaleAnim }],
+          },
+        ]}>
+        <Animated.View
+          style={[
+            styles.emblem,
+            {
+              backgroundColor: theme.card,
+              borderColor: theme.borderStrong,
+              transform: [{ scale: pulseAnim }],
+            },
+          ]}>
+          <View style={[styles.innerBadge, { backgroundColor: theme.primary }]}>
+            <Ionicons name="search" size={36} color="#FFFFFF" />
+          </View>
+        </Animated.View>
+
+        <ThemedText style={styles.appName}>{APP_CONFIG.name}</ThemedText>
+        <ThemedText style={[styles.tagline, { color: theme.textSecondary }]}>
+          {APP_CONFIG.tagline}
         </ThemedText>
+        <ThemedText style={[styles.registrySubtitle, { color: theme.textMuted }]}>
+          Campus Lost & Found Registry
+        </ThemedText>
+      </Animated.View>
 
-        <ThemedView type="backgroundElement" style={styles.stepContainer}>
-          <HintRow
-            title="Try editing"
-            hint={<ThemedText type="code">src/app/index.tsx</ThemedText>}
-          />
-          <HintRow title="Dev tools" hint={getDevMenuHint()} />
-          <HintRow
-            title="Fresh start"
-            hint={<ThemedText type="code">npm run reset-project</ThemedText>}
-          />
-        </ThemedView>
-
-        {Platform.OS === 'web' && <WebBadge />}
-      </SafeAreaView>
-    </ThemedView>
+      <View style={styles.footer}>
+        <ThemedText style={[styles.footerText, { color: theme.textMuted }]}>
+          Offline Local Storage • v{APP_CONFIG.version}
+        </ThemedText>
+      </View>
+    </View>
   );
 }
 
@@ -65,34 +119,50 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     justifyContent: 'center',
-    flexDirection: 'row',
-  },
-  safeArea: {
-    flex: 1,
-    paddingHorizontal: Spacing.four,
     alignItems: 'center',
-    gap: Spacing.three,
-    paddingBottom: BottomTabInset + Spacing.three,
-    maxWidth: MaxContentWidth,
+    padding: Spacing.four,
   },
-  heroSection: {
+  content: {
+    alignItems: 'center',
+  },
+  emblem: {
+    width: 88,
+    height: 88,
+    borderRadius: BorderRadius.md,
+    borderWidth: 1.5,
     alignItems: 'center',
     justifyContent: 'center',
-    flex: 1,
-    paddingHorizontal: Spacing.four,
-    gap: Spacing.four,
+    marginBottom: Spacing.four,
   },
-  title: {
+  innerBadge: {
+    width: 64,
+    height: 64,
+    borderRadius: BorderRadius.sm,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  appName: {
+    fontSize: 28,
+    fontWeight: '800',
+    letterSpacing: -0.6,
+    marginBottom: 4,
+  },
+  tagline: {
+    fontSize: 15,
+    fontWeight: '600',
     textAlign: 'center',
   },
-  code: {
-    textTransform: 'uppercase',
+  registrySubtitle: {
+    fontSize: 12,
+    fontWeight: '500',
+    marginTop: 4,
   },
-  stepContainer: {
-    gap: Spacing.three,
-    alignSelf: 'stretch',
-    paddingHorizontal: Spacing.three,
-    paddingVertical: Spacing.four,
-    borderRadius: Spacing.four,
+  footer: {
+    position: 'absolute',
+    bottom: Spacing.six,
+  },
+  footerText: {
+    fontSize: 12,
+    fontWeight: '500',
   },
 });

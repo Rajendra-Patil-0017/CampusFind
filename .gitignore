@@ -38,6 +38,15 @@ yarn-error.*
 
 example
 
+# Windows
+desktop.ini
+Thumbs.db
+
+# IDE / agents
+.claude/
+.vscode/
+
 # generated native folders
 /ios
 /android
+
