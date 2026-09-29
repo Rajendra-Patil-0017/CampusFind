@@ -3,8 +3,22 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { createClient } from '@supabase/supabase-js';
 import { Platform } from 'react-native';
 
-const supabaseUrl = process.env.EXPO_PUBLIC_SUPABASE_URL || '';
-const supabaseAnonKey = process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY || '';
+function normalizeSupabaseUrl(url: string): string {
+  if (!url) return '';
+  const trimmed = url.trim();
+  // Handle case where dashboard URL is provided: https://supabase.com/dashboard/project/<ref>
+  const dashboardMatch = trimmed.match(/supabase\.com\/dashboard\/project\/([a-z0-9_-]+)/i);
+  if (dashboardMatch && dashboardMatch[1]) {
+    return `https://${dashboardMatch[1]}.supabase.co`;
+  }
+  return trimmed;
+}
+
+const rawSupabaseUrl = process.env.EXPO_PUBLIC_SUPABASE_URL || '';
+const rawSupabaseAnonKey = process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY || '';
+
+const supabaseUrl = normalizeSupabaseUrl(rawSupabaseUrl);
+const supabaseAnonKey = rawSupabaseAnonKey.trim();
 
 export const isSupabaseConfigured = Boolean(
   supabaseUrl &&
