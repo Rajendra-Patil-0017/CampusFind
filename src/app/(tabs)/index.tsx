@@ -5,6 +5,7 @@ import {
   Pressable,
   RefreshControl,
   StyleSheet,
+  useWindowDimensions,
   View,
 } from 'react-native';
 import { router, useFocusEffect } from 'expo-router';
@@ -17,6 +18,8 @@ import { ItemCard } from '@/components/ItemCard';
 import { EmptyState } from '@/components/EmptyState';
 import { LoadingState } from '@/components/LoadingState';
 import { PrimaryButton } from '@/components/PrimaryButton';
+import { DesktopSidebar } from '@/components/DesktopSidebar';
+import { DesktopHeader } from '@/components/DesktopHeader';
 import { useTheme } from '@/hooks/use-theme';
 import { StorageService } from '@/services/storage';
 import { FilterState, ItemSortOption, LostFoundItem } from '@/types/item';
@@ -26,12 +29,17 @@ import { Ionicons } from '@expo/vector-icons';
 
 export default function HomeScreen() {
   const theme = useTheme();
+  const { width } = useWindowDimensions();
+  const isDesktop = width >= 880;
+  const isTablet = width >= 600 && width < 880;
+
   const [items, setItems] = useState<LostFoundItem[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [refreshing, setRefreshing] = useState<boolean>(false);
   const [sortModalVisible, setSortModalVisible] = useState<boolean>(false);
   const [selectedLocation, setSelectedLocation] = useState<string>('all');
   const [hideResolved, setHideResolved] = useState<boolean>(false);
+  const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
 
   const [filters, setFilters] = useState<FilterState>({
     type: 'all',
@@ -107,187 +115,192 @@ export default function HomeScreen() {
     updated: 'Recently Updated',
   };
 
-  const campusLocations = [
-    { id: 'all', label: 'All Campus Locations' },
-    { id: 'library', label: 'Central Library' },
-    { id: 'dining', label: 'Dining Hall / Cafe' },
-    { id: 'center', label: 'Student Center' },
-    { id: 'engineering', label: 'Engineering Hall' },
-    { id: 'gym', label: 'Gym & Sports Complex' },
-  ];
+  const numColumns = isDesktop ? (viewMode === 'grid' ? 3 : 1) : isTablet ? (viewMode === 'grid' ? 2 : 1) : 1;
 
-  return (
-    <SafeAreaView
-      style={[styles.safeArea, { backgroundColor: theme.background }]}
-      edges={['top', 'left', 'right']}>
-      <View style={styles.responsiveContainer}>
-        {/* Academic Masthead Header */}
-        <View style={[styles.masthead, { borderBottomColor: theme.border }]}>
-          <View style={styles.mastheadTop}>
-            <View style={styles.brandRow}>
-              <View style={[styles.crestIcon, { backgroundColor: theme.primaryLight, borderColor: theme.primary }]}>
-                <Ionicons name="school" size={20} color={theme.primary} />
-              </View>
-              <View style={styles.titleArea}>
-                <ThemedText style={[styles.headerTitle, { color: theme.text }]}>CampusFind</ThemedText>
-                <ThemedText style={[styles.headerSubtitle, { color: theme.textSecondary }]}>
-                  Find It. Report It. Return It.
-                </ThemedText>
-              </View>
-            </View>
-
-            <PrimaryButton
-              title="Report Item"
-              icon="add-circle"
-              size="sm"
-              onPress={() => router.push('/(tabs)/add')}
-              style={styles.headerReportBtn}
-            />
-          </View>
-        </View>
-
-        {/* Scrollable Feed Container */}
-        <FlatList
-          data={filteredItems}
-          keyExtractor={(item) => item.id}
-          renderItem={({ item }) => (
+  const renderContent = () => (
+    <View style={styles.responsiveContainer}>
+      {/* Scrollable Feed with Academic Layout */}
+      <FlatList
+        key={numColumns} // Force remount on column change
+        numColumns={numColumns}
+        data={filteredItems}
+        keyExtractor={(item) => item.id}
+        columnWrapperStyle={numColumns > 1 ? styles.columnWrapper : undefined}
+        renderItem={({ item }) => (
+          <View style={numColumns > 1 ? { flex: 1 / numColumns, paddingHorizontal: 6 } : undefined}>
             <ItemCard
               item={item}
               onPress={(selected) => router.push(`/item/${selected.id}` as any)}
             />
-          )}
-          contentContainerStyle={styles.listContent}
-          showsVerticalScrollIndicator={false}
-          refreshControl={
-            <RefreshControl
-              refreshing={refreshing}
-              onRefresh={onRefresh}
-              tintColor={theme.primary}
-              colors={[theme.primary]}
-            />
-          }
-          ListHeaderComponent={
-            <View style={styles.feedHeaderContent}>
-              {/* Campus Location Quick Filter */}
-              <View style={styles.locationSelectorRow}>
-                <Ionicons name="location-outline" size={14} color={theme.textSecondary} style={{ marginRight: 4 }} />
-                <ThemedText style={[styles.locationLabel, { color: theme.textSecondary }]}>
-                  Campus Zone:
+          </View>
+        )}
+        contentContainerStyle={styles.listContent}
+        showsVerticalScrollIndicator={false}
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={onRefresh}
+            tintColor={theme.primary}
+            colors={[theme.primary]}
+          />
+        }
+        ListHeaderComponent={
+          <View style={styles.feedHeaderContent}>
+            {/* 1. Academic Masthead Banner */}
+            <View style={[styles.mastheadBanner, { borderBottomColor: theme.border }]}>
+              <View style={styles.mastheadLeft}>
+                <ThemedText style={[styles.eyebrowText, { color: theme.textSecondary }]}>
+                  OFFICIAL UNIVERSITY STUDENT DISPATCH • LIVE GAZETTE
                 </ThemedText>
-                <Pressable
-                  onPress={() => {
-                    const currIdx = campusLocations.findIndex((l) => l.id === selectedLocation);
-                    const nextIdx = (currIdx + 1) % campusLocations.length;
-                    setSelectedLocation(campusLocations[nextIdx].id);
-                  }}
-                  style={[styles.locationPill, { backgroundColor: theme.elevatedSurface, borderColor: theme.border }]}>
-                  <ThemedText style={[styles.locationPillText, { color: theme.primary }]}>
-                    {campusLocations.find((l) => l.id === selectedLocation)?.label}
-                  </ThemedText>
-                  <Ionicons name="chevron-down" size={12} color={theme.primary} />
-                </Pressable>
+                <ThemedText style={[styles.bulletinTitle, { color: theme.text }]}>
+                  Campus Bulletin
+                </ThemedText>
+                <ThemedText style={[styles.bulletinSubtitle, { color: theme.textSecondary }]}>
+                  Find It. Report It. Return It.
+                </ThemedText>
               </View>
 
-              {/* Summary Stats Cards */}
-              <View style={styles.statsRow}>
+              {/* Summary Stats Badges */}
+              <View style={styles.statsSummaryRow}>
                 <Pressable
                   onPress={() => setFilters((prev) => ({ ...prev, type: 'lost', status: 'active' }))}
                   style={[
-                    styles.statCard,
+                    styles.statPill,
                     {
-                      backgroundColor: theme.card,
+                      backgroundColor: filters.type === 'lost' ? theme.lostBg : theme.card,
                       borderColor: filters.type === 'lost' ? theme.lost : theme.border,
                     },
                     Shadows.subtle,
                   ]}>
-                  <View style={[styles.statIconBadge, { backgroundColor: theme.lostBg }]}>
-                    <Ionicons name="alert-circle" size={16} color={theme.lost} />
-                  </View>
-                  <View style={styles.statContent}>
-                    <ThemedText style={[styles.statNumber, { color: theme.lost }]}>{lostCount}</ThemedText>
-                    <ThemedText style={[styles.statTitle, { color: theme.textSecondary }]}>Lost Notices</ThemedText>
-                  </View>
+                  <Ionicons name="alert-circle" size={14} color={theme.lost} />
+                  <ThemedText style={[styles.statPillCount, { color: theme.lost }]}>{lostCount}</ThemedText>
+                  <ThemedText style={[styles.statPillLabel, { color: theme.textSecondary }]}>Lost</ThemedText>
                 </Pressable>
 
                 <Pressable
                   onPress={() => setFilters((prev) => ({ ...prev, type: 'found', status: 'active' }))}
                   style={[
-                    styles.statCard,
+                    styles.statPill,
                     {
-                      backgroundColor: theme.card,
+                      backgroundColor: filters.type === 'found' ? theme.foundBg : theme.card,
                       borderColor: filters.type === 'found' ? theme.found : theme.border,
                     },
                     Shadows.subtle,
                   ]}>
-                  <View style={[styles.statIconBadge, { backgroundColor: theme.foundBg }]}>
-                    <Ionicons name="checkmark-circle" size={16} color={theme.found} />
-                  </View>
-                  <View style={styles.statContent}>
-                    <ThemedText style={[styles.statNumber, { color: theme.found }]}>{foundCount}</ThemedText>
-                    <ThemedText style={[styles.statTitle, { color: theme.textSecondary }]}>Found Items</ThemedText>
-                  </View>
+                  <Ionicons name="checkmark-circle" size={14} color={theme.found} />
+                  <ThemedText style={[styles.statPillCount, { color: theme.found }]}>{foundCount}</ThemedText>
+                  <ThemedText style={[styles.statPillLabel, { color: theme.textSecondary }]}>Found</ThemedText>
                 </Pressable>
 
                 <Pressable
                   onPress={() => setFilters((prev) => ({ ...prev, status: 'resolved' }))}
                   style={[
-                    styles.statCard,
+                    styles.statPill,
                     {
-                      backgroundColor: theme.card,
+                      backgroundColor: filters.status === 'resolved' ? theme.resolvedBg : theme.card,
                       borderColor: filters.status === 'resolved' ? theme.resolved : theme.border,
                     },
                     Shadows.subtle,
                   ]}>
-                  <View style={[styles.statIconBadge, { backgroundColor: theme.resolvedBg }]}>
-                    <Ionicons name="archive" size={16} color={theme.resolved} />
-                  </View>
-                  <View style={styles.statContent}>
-                    <ThemedText style={[styles.statNumber, { color: theme.resolved }]}>{resolvedCount}</ThemedText>
-                    <ThemedText style={[styles.statTitle, { color: theme.textSecondary }]}>Restored</ThemedText>
-                  </View>
+                  <Ionicons name="archive" size={14} color={theme.resolved} />
+                  <ThemedText style={[styles.statPillCount, { color: theme.resolved }]}>{resolvedCount}</ThemedText>
+                  <ThemedText style={[styles.statPillLabel, { color: theme.textSecondary }]}>Restored</ThemedText>
                 </Pressable>
               </View>
+            </View>
 
-              {/* Campus Safe Exchange Advisory Panel */}
-              <View
-                style={[
-                  styles.advisoryCard,
-                  { backgroundColor: theme.elevatedSurface, borderColor: theme.border },
-                ]}>
-                <Ionicons name="shield-checkmark" size={20} color={theme.primary} style={styles.advisoryIcon} />
-                <View style={styles.advisoryContent}>
-                  <ThemedText style={[styles.advisoryTitle, { color: theme.primary }]}>
-                    Campus Safe Exchange Advisory
-                  </ThemedText>
-                  <ThemedText style={[styles.advisoryDesc, { color: theme.textSecondary }]}>
-                    Security Desks & Student Center foyer are designated 24/7 exchange zones for in-person handoffs.
-                  </ThemedText>
-                </View>
+            {/* 2. Official Campus Safe Exchange Protocol Notice */}
+            <View
+              style={[
+                styles.safetyNoticePanel,
+                { backgroundColor: theme.elevatedSurface, borderColor: theme.border },
+                Shadows.subtle,
+              ]}>
+              <View style={[styles.safetyNoticeIconBox, { backgroundColor: theme.primary }]}>
+                <Ionicons name="shield-checkmark" size={20} color="#FFFFFF" />
               </View>
-
-              {/* Search Bar */}
-              <View style={styles.searchSection}>
-                <SearchBar
-                  value={filters.searchQuery}
-                  onChangeText={(text) => setFilters((prev) => ({ ...prev, searchQuery: text }))}
-                  onClear={() => setFilters((prev) => ({ ...prev, searchQuery: '' }))}
-                  showFilterButton={false}
-                />
-              </View>
-
-              {/* Status Filter Chips */}
-              <View style={styles.filterSection}>
-                <ThemedText style={[styles.filterGroupLabel, { color: theme.textSecondary }]}>
-                  NOTICE STATUS
+              <View style={styles.safetyNoticeContent}>
+                <ThemedText style={[styles.safetyNoticeTag, { color: theme.primary }]}>
+                  CAMPUS SAFETY NOTICE
                 </ThemedText>
-                <View style={styles.filterRow} accessibilityRole="radiogroup" accessibilityLabel="Filter by status">
+                <ThemedText style={[styles.safetyNoticeHeading, { color: theme.text }]}>
+                  Official Campus Safe Exchange Protocol
+                </ThemedText>
+                <ThemedText style={[styles.safetyNoticeDesc, { color: theme.textSecondary }]}>
+                  Security Desks & Student Center foyer are designated 24/7 exchange zones for in-person handoffs.
+                </ThemedText>
+              </View>
+              <Pressable
+                onPress={() => router.push('/about')}
+                style={[styles.safetyActionBtn, { backgroundColor: theme.card, borderColor: theme.border }]}>
+                <ThemedText style={[styles.safetyActionText, { color: theme.primary }]}>View Protocol</ThemedText>
+                <Ionicons name="arrow-forward" size={12} color={theme.primary} />
+              </Pressable>
+            </View>
+
+            {/* 3. Search and Filter Toolbar */}
+            <View
+              style={[
+                styles.toolbarCard,
+                { backgroundColor: theme.card, borderColor: theme.border },
+                Shadows.subtle,
+              ]}>
+              {/* Row 1: Search Bar + View Mode */}
+              <View style={styles.searchRow}>
+                <View style={styles.searchFlex}>
+                  <SearchBar
+                    value={filters.searchQuery}
+                    onChangeText={(text) => setFilters((prev) => ({ ...prev, searchQuery: text }))}
+                    onClear={() => setFilters((prev) => ({ ...prev, searchQuery: '' }))}
+                    showFilterButton={false}
+                    placeholder="Search by keywords, location, or item name..."
+                  />
+                </View>
+
+                {/* Grid / List View Toggle on wide screens */}
+                {isDesktop && (
+                  <View style={[styles.viewToggleGroup, { borderColor: theme.border }]}>
+                    <Pressable
+                      onPress={() => setViewMode('grid')}
+                      style={[
+                        styles.viewToggleBtn,
+                        { backgroundColor: viewMode === 'grid' ? theme.primary : 'transparent' },
+                      ]}>
+                      <Ionicons
+                        name="grid-outline"
+                        size={16}
+                        color={viewMode === 'grid' ? '#FFFFFF' : theme.textSecondary}
+                      />
+                    </Pressable>
+                    <Pressable
+                      onPress={() => setViewMode('list')}
+                      style={[
+                        styles.viewToggleBtn,
+                        { backgroundColor: viewMode === 'list' ? theme.primary : 'transparent' },
+                      ]}>
+                      <Ionicons
+                        name="list-outline"
+                        size={16}
+                        color={viewMode === 'list' ? '#FFFFFF' : theme.textSecondary}
+                      />
+                    </Pressable>
+                  </View>
+                )}
+              </View>
+
+              {/* Row 2: Status Filters */}
+              <View style={styles.statusToolbarRow}>
+                <ThemedText style={[styles.filterRowTitle, { color: theme.textSecondary }]}>
+                  STATUS:
+                </ThemedText>
+                <View style={styles.statusChipsWrap}>
                   <FilterChip
-                    label="All Statuses"
+                    label="All Notices"
                     selected={filters.type === 'all' && filters.status === 'active'}
                     onPress={() => setFilters((prev) => ({ ...prev, type: 'all', status: 'active' }))}
                   />
                   <FilterChip
-                    label="Lost"
+                    label="Missing / Lost"
                     icon="alert-circle-outline"
                     selected={filters.type === 'lost' && filters.status === 'active'}
                     count={lostCount}
@@ -301,7 +314,7 @@ export default function HomeScreen() {
                     }
                   />
                   <FilterChip
-                    label="Found"
+                    label="Turned In / Found"
                     icon="checkmark-circle-outline"
                     selected={filters.type === 'found' && filters.status === 'active'}
                     count={foundCount}
@@ -315,7 +328,7 @@ export default function HomeScreen() {
                     }
                   />
                   <FilterChip
-                    label="Resolved"
+                    label="Returned to Owner"
                     icon="archive-outline"
                     selected={filters.status === 'resolved'}
                     count={resolvedCount}
@@ -329,10 +342,10 @@ export default function HomeScreen() {
                 </View>
               </View>
 
-              {/* Category Filter Chips */}
-              <View style={styles.categorySection}>
-                <ThemedText style={[styles.filterGroupLabel, { color: theme.textSecondary, paddingHorizontal: ScreenPadding }]}>
-                  COLLEGIATE CATEGORIES
+              {/* Row 3: Category Filter Horizontal Scroll */}
+              <View style={styles.categoryToolbarRow}>
+                <ThemedText style={[styles.filterRowTitle, { color: theme.textSecondary, paddingLeft: 4 }]}>
+                  CATEGORY:
                 </ThemedText>
                 <CategoryPicker
                   horizontal
@@ -341,63 +354,101 @@ export default function HomeScreen() {
                   onSelectCategory={(category) => setFilters((prev) => ({ ...prev, category }))}
                 />
               </View>
+            </View>
 
-              {/* Meta Bar with Count, Hide Restored, & Sort Trigger */}
-              <View style={styles.metaRow}>
-                <ThemedText style={[styles.resultsCount, { color: theme.textSecondary }]}>
-                  {filteredItems.length} {filteredItems.length === 1 ? 'Notice' : 'Notices'}
-                  {filters.category !== 'all' ? ` in ${filters.category}` : ''}
+            {/* 4. Meta Bar with Results Count & Sort Selection */}
+            <View style={styles.metaRow}>
+              <View style={styles.resultsBadge}>
+                <ThemedText style={[styles.resultsCount, { color: theme.text }]}>
+                  {filteredItems.length} {filteredItems.length === 1 ? 'Notice' : 'Notices'} Listed
                 </ThemedText>
+                {filters.category !== 'all' && (
+                  <ThemedText style={[styles.filterTag, { color: theme.primary }]}>
+                    • {filters.category}
+                  </ThemedText>
+                )}
+              </View>
 
-                <View style={styles.metaActionsRight}>
-                  <Pressable
-                    onPress={() => setHideResolved((prev) => !prev)}
-                    style={styles.hideResolvedBtn}>
-                    <Ionicons
-                      name={hideResolved ? 'checkbox' : 'square-outline'}
-                      size={15}
-                      color={hideResolved ? theme.primary : theme.textSecondary}
-                    />
-                    <ThemedText style={[styles.hideResolvedText, { color: theme.textSecondary }]}>
-                      Hide Restored
-                    </ThemedText>
-                  </Pressable>
+              <View style={styles.metaActionsRight}>
+                {/* Hide Restored Checkbox */}
+                <Pressable
+                  onPress={() => setHideResolved((prev) => !prev)}
+                  style={styles.hideResolvedBtn}>
+                  <Ionicons
+                    name={hideResolved ? 'checkbox' : 'square-outline'}
+                    size={15}
+                    color={hideResolved ? theme.primary : theme.textSecondary}
+                  />
+                  <ThemedText style={[styles.hideResolvedText, { color: theme.textSecondary }]}>
+                    Hide Restored
+                  </ThemedText>
+                </Pressable>
 
-                  <Pressable
-                    onPress={() => setSortModalVisible(true)}
-                    hitSlop={8}
-                    accessibilityRole="button"
-                    accessibilityLabel={`Sort notices, currently ${sortLabels[filters.sortBy]}`}
-                    style={styles.sortButton}>
-                    <ThemedText style={[styles.sortText, { color: theme.primary }]}>
-                      {sortLabels[filters.sortBy]}
-                    </ThemedText>
-                    <Ionicons name="chevron-down" size={13} color={theme.primary} />
-                  </Pressable>
-                </View>
+                {/* Sort Dropdown Button */}
+                <Pressable
+                  onPress={() => setSortModalVisible(true)}
+                  hitSlop={8}
+                  accessibilityRole="button"
+                  accessibilityLabel={`Sort notices, currently ${sortLabels[filters.sortBy]}`}
+                  style={[styles.sortButton, { backgroundColor: theme.card, borderColor: theme.border }]}>
+                  <ThemedText style={[styles.sortText, { color: theme.primary }]}>
+                    Sort: {sortLabels[filters.sortBy]}
+                  </ThemedText>
+                  <Ionicons name="chevron-down" size={13} color={theme.primary} />
+                </Pressable>
               </View>
             </View>
-          }
-          ListEmptyComponent={
-            loading ? (
-              <LoadingState message="Loading campus bulletin..." />
-            ) : (
-              <EmptyState
-                icon="search-outline"
-                title="No Notices Found"
-                description={
-                  hasActiveFilters
-                    ? 'No notices match your current filters or search keywords.'
-                    : 'There are no active lost or found posts on campus right now.'
-                }
-                actionTitle={hasActiveFilters ? 'Clear Filters' : 'Report an Item'}
-                actionIcon={hasActiveFilters ? 'refresh-outline' : 'add'}
-                onAction={hasActiveFilters ? resetFilters : () => router.push('/(tabs)/add')}
-              />
-            )
-          }
-        />
-      </View>
+          </View>
+        }
+        ListEmptyComponent={
+          loading ? (
+            <LoadingState message="Loading campus bulletin..." />
+          ) : (
+            <EmptyState
+              icon="search-outline"
+              title="No Notices Found"
+              description={
+                hasActiveFilters
+                  ? 'No notices match your current filters or search keywords.'
+                  : 'There are no active lost or found posts on campus right now.'
+              }
+              actionTitle={hasActiveFilters ? 'Clear Filters' : 'Report an Item'}
+              actionIcon={hasActiveFilters ? 'refresh-outline' : 'add'}
+              onAction={hasActiveFilters ? resetFilters : () => router.push('/(tabs)/add')}
+            />
+          )
+        }
+        ListFooterComponent={
+          filteredItems.length > 0 ? (
+            <View style={[styles.footerPagination, { borderTopColor: theme.border }]}>
+              <ThemedText style={[styles.footerStatsText, { color: theme.textMuted }]}>
+                Showing {filteredItems.length} of {items.length} total campus notices
+              </ThemedText>
+            </View>
+          ) : null
+        }
+      />
+    </View>
+  );
+
+  return (
+    <SafeAreaView
+      style={[styles.safeArea, { backgroundColor: theme.background }]}
+      edges={['top', 'left', 'right']}>
+      {isDesktop ? (
+        <View style={styles.desktopLayoutRow}>
+          {/* Desktop Left Sidebar */}
+          <DesktopSidebar activeRoute="bulletin" />
+
+          {/* Desktop Main Content Column */}
+          <View style={styles.desktopMainCol}>
+            <DesktopHeader />
+            <View style={styles.desktopContentArea}>{renderContent()}</View>
+          </View>
+        </View>
+      ) : (
+        renderContent()
+      )}
 
       {/* Sort & Filter Modal */}
       <Modal
@@ -541,173 +592,201 @@ const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
   },
+  desktopLayoutRow: {
+    flex: 1,
+    flexDirection: 'row',
+    height: '100%',
+  },
+  desktopMainCol: {
+    flex: 1,
+    height: '100%',
+  },
+  desktopContentArea: {
+    flex: 1,
+  },
   responsiveContainer: {
     flex: 1,
     width: '100%',
     maxWidth: MaxContentWidth,
     alignSelf: 'center',
   },
-  masthead: {
-    paddingHorizontal: ScreenPadding,
-    paddingTop: Spacing.three,
-    paddingBottom: Spacing.two,
-    borderBottomWidth: 1,
+  columnWrapper: {
+    justifyContent: 'space-between',
   },
-  mastheadTop: {
+  feedHeaderContent: {
+    paddingTop: Spacing.two,
+  },
+  mastheadBanner: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    gap: Spacing.two,
-  },
-  brandRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    flex: 1,
+    paddingHorizontal: ScreenPadding,
+    paddingTop: Spacing.two,
+    paddingBottom: Spacing.three,
+    flexWrap: 'wrap',
     gap: Spacing.three,
   },
-  crestIcon: {
-    width: 40,
-    height: 40,
-    borderRadius: BorderRadius.md,
-    borderWidth: 1.5,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  titleArea: {
+  mastheadLeft: {
     flex: 1,
+    minWidth: 260,
   },
-  headerTitle: {
-    fontFamily: Fonts.serif,
-    fontSize: Typography.xl,
+  eyebrowText: {
+    fontSize: 10,
     fontWeight: '700',
-    letterSpacing: -0.4,
+    letterSpacing: 0.8,
+    marginBottom: 4,
+    fontFamily: Fonts.mono,
   },
-  headerSubtitle: {
+  bulletinTitle: {
+    fontFamily: Fonts.serif,
+    fontSize: 28,
+    fontWeight: '700',
+    letterSpacing: -0.5,
+    lineHeight: 34,
+  },
+  bulletinSubtitle: {
     fontSize: Typography.sm,
-    marginTop: 1,
+    marginTop: 2,
     fontStyle: 'italic',
   },
-  headerReportBtn: {
-    paddingHorizontal: 14,
-    paddingVertical: 8,
-  },
-  feedHeaderContent: {
-    paddingTop: Spacing.three,
-  },
-  locationSelectorRow: {
+  statsSummaryRow: {
     flexDirection: 'row',
+    gap: 8,
     alignItems: 'center',
-    paddingHorizontal: ScreenPadding,
-    marginBottom: Spacing.three,
   },
-  locationLabel: {
-    fontSize: Typography.xs,
-    fontWeight: '600',
-    marginRight: 6,
-  },
-  locationPill: {
+  statPill: {
     flexDirection: 'row',
     alignItems: 'center',
     paddingHorizontal: 10,
-    paddingVertical: 5,
-    borderRadius: BorderRadius.full,
-    borderWidth: 1,
-    gap: 4,
-  },
-  locationPillText: {
-    fontSize: Typography.xs,
-    fontWeight: '700',
-  },
-  statsRow: {
-    flexDirection: 'row',
-    paddingHorizontal: ScreenPadding,
-    gap: 8,
-    marginBottom: Spacing.three,
-  },
-  statCard: {
-    flex: 1,
-    flexDirection: 'row',
-    alignItems: 'center',
-    padding: Spacing.two + 2,
-    borderRadius: BorderRadius.md,
-    borderWidth: 1,
-    gap: 8,
-  },
-  statIconBadge: {
-    width: 30,
-    height: 30,
+    paddingVertical: 6,
     borderRadius: BorderRadius.sm,
-    alignItems: 'center',
-    justifyContent: 'center',
+    borderWidth: 1,
+    gap: 5,
   },
-  statContent: {
-    flex: 1,
-  },
-  statNumber: {
-    fontSize: 16,
+  statPillCount: {
+    fontSize: 13,
     fontWeight: '800',
-    lineHeight: 18,
   },
-  statTitle: {
-    fontSize: 10,
+  statPillLabel: {
+    fontSize: 11,
     fontWeight: '600',
-    marginTop: 1,
   },
-  advisoryCard: {
+  safetyNoticePanel: {
     flexDirection: 'row',
-    alignItems: 'flex-start',
+    alignItems: 'center',
     marginHorizontal: ScreenPadding,
     padding: Spacing.three,
-    borderRadius: BorderRadius.md,
+    borderRadius: BorderRadius.lg,
     borderWidth: 1,
     gap: Spacing.three,
     marginBottom: Spacing.three,
+    flexWrap: 'wrap',
   },
-  advisoryIcon: {
-    marginTop: 2,
+  safetyNoticeIconBox: {
+    width: 38,
+    height: 38,
+    borderRadius: BorderRadius.md,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
-  advisoryContent: {
+  safetyNoticeContent: {
     flex: 1,
+    minWidth: 200,
   },
-  advisoryTitle: {
-    fontSize: 13,
+  safetyNoticeTag: {
+    fontSize: 10,
+    fontWeight: '700',
+    letterSpacing: 0.6,
+    marginBottom: 2,
+  },
+  safetyNoticeHeading: {
+    fontSize: 14,
     fontWeight: '700',
     marginBottom: 2,
   },
-  advisoryDesc: {
+  safetyNoticeDesc: {
     fontSize: 12,
     lineHeight: 16,
   },
-  searchSection: {
-    paddingHorizontal: ScreenPadding,
-    marginBottom: Spacing.two,
-  },
-  filterSection: {
-    paddingHorizontal: ScreenPadding,
-    marginBottom: Spacing.two,
-  },
-  filterGroupLabel: {
-    fontSize: Typography.xs,
-    fontWeight: '700',
-    letterSpacing: 0.6,
-    marginBottom: 6,
-  },
-  filterRow: {
+  safetyActionBtn: {
     flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 12,
+    paddingVertical: 7,
+    borderRadius: BorderRadius.sm,
+    borderWidth: 1,
+    gap: 4,
+  },
+  safetyActionText: {
+    fontSize: 12,
+    fontWeight: '700',
+  },
+  toolbarCard: {
+    marginHorizontal: ScreenPadding,
+    padding: Spacing.three,
+    borderRadius: BorderRadius.lg,
+    borderWidth: 1,
+    marginBottom: Spacing.three,
+    gap: Spacing.two + 2,
+  },
+  searchRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: Spacing.two,
+  },
+  searchFlex: {
+    flex: 1,
+  },
+  viewToggleGroup: {
+    flexDirection: 'row',
+    borderWidth: 1,
+    borderRadius: BorderRadius.md,
+    overflow: 'hidden',
+  },
+  viewToggleBtn: {
+    paddingHorizontal: 10,
+    paddingVertical: 8,
+  },
+  statusToolbarRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
     flexWrap: 'wrap',
     gap: 6,
   },
-  categorySection: {
-    marginBottom: Spacing.two,
+  filterRowTitle: {
+    fontSize: 10,
+    fontWeight: '700',
+    letterSpacing: 0.6,
+    marginRight: 4,
+  },
+  statusChipsWrap: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 6,
+    flex: 1,
+  },
+  categoryToolbarRow: {
+    marginTop: 2,
   },
   metaRow: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
     paddingHorizontal: ScreenPadding,
-    marginBottom: Spacing.two,
+    marginBottom: Spacing.three,
+    flexWrap: 'wrap',
+    gap: Spacing.two,
+  },
+  resultsBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
   },
   resultsCount: {
+    fontSize: Typography.xs,
+    fontWeight: '700',
+  },
+  filterTag: {
     fontSize: Typography.xs,
     fontWeight: '600',
   },
@@ -728,15 +807,29 @@ const styles = StyleSheet.create({
   sortButton: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 3,
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    borderRadius: BorderRadius.sm,
+    borderWidth: 1,
+    gap: 4,
   },
   sortText: {
     fontSize: Typography.xs,
-    fontWeight: '600',
+    fontWeight: '700',
   },
   listContent: {
     paddingHorizontal: ScreenPadding,
     paddingBottom: 120,
+  },
+  footerPagination: {
+    paddingVertical: Spacing.four,
+    borderTopWidth: 1,
+    alignItems: 'center',
+    marginTop: Spacing.two,
+  },
+  footerStatsText: {
+    fontSize: Typography.xs,
+    fontFamily: Fonts.mono,
   },
   modalOverlay: {
     flex: 1,

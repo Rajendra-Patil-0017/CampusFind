@@ -4,6 +4,7 @@ import {
   Pressable,
   RefreshControl,
   StyleSheet,
+  useWindowDimensions,
   View,
 } from 'react-native';
 import { router, useFocusEffect } from 'expo-router';
@@ -14,6 +15,8 @@ import { EmptyState } from '@/components/EmptyState';
 import { LoadingState } from '@/components/LoadingState';
 import { ConfirmDialog } from '@/components/ConfirmDialog';
 import { Snackbar } from '@/components/Snackbar';
+import { DesktopSidebar } from '@/components/DesktopSidebar';
+import { DesktopHeader } from '@/components/DesktopHeader';
 import { useTheme } from '@/hooks/use-theme';
 import { StorageService } from '@/services/storage';
 import { APP_CONFIG } from '@/constants/config';
@@ -23,6 +26,8 @@ import { Ionicons } from '@expo/vector-icons';
 
 export default function MyPostsScreen() {
   const theme = useTheme();
+  const { width } = useWindowDimensions();
+  const isDesktop = width >= 880;
 
   const [posts, setPosts] = useState<LostFoundItem[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
@@ -104,18 +109,15 @@ export default function MyPostsScreen() {
     setSnackbarVisible(true);
   };
 
-  return (
-    <SafeAreaView
-      style={[styles.safeArea, { backgroundColor: theme.background }]}
-      edges={['top', 'left', 'right']}>
-      <View style={styles.responsiveContainer}>
-        {/* Screen Header */}
-        <View style={styles.header}>
-          <ThemedText style={styles.headerTitle}>My Reports</ThemedText>
-          <ThemedText style={[styles.headerSubtitle, { color: theme.textSecondary }]}>
-            Manage your lost and found listings
-          </ThemedText>
-        </View>
+  const renderContent = () => (
+    <View style={styles.responsiveContainer}>
+      {/* Screen Header */}
+      <View style={styles.header}>
+        <ThemedText style={styles.headerTitle}>My Reports</ThemedText>
+        <ThemedText style={[styles.headerSubtitle, { color: theme.textSecondary }]}>
+          Manage your personal lost and found listings
+        </ThemedText>
+      </View>
 
       {/* Segmented Tab Selector */}
       <View style={styles.tabContainer}>
@@ -294,12 +296,41 @@ export default function MyPostsScreen() {
           }}
         />
       </View>
+  );
+
+  return (
+    <SafeAreaView
+      style={[styles.safeArea, { backgroundColor: theme.background }]}
+      edges={['top', 'left', 'right']}>
+      {isDesktop ? (
+        <View style={styles.desktopLayoutRow}>
+          <DesktopSidebar activeRoute="my-reports" />
+          <View style={styles.desktopMainCol}>
+            <DesktopHeader />
+            <View style={styles.desktopContentArea}>{renderContent()}</View>
+          </View>
+        </View>
+      ) : (
+        renderContent()
+      )}
     </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
   safeArea: {
+    flex: 1,
+  },
+  desktopLayoutRow: {
+    flex: 1,
+    flexDirection: 'row',
+    height: '100%',
+  },
+  desktopMainCol: {
+    flex: 1,
+    height: '100%',
+  },
+  desktopContentArea: {
     flex: 1,
   },
   responsiveContainer: {

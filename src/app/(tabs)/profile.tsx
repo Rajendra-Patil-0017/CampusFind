@@ -5,6 +5,7 @@ import {
   Pressable,
   ScrollView,
   StyleSheet,
+  useWindowDimensions,
   View,
 } from 'react-native';
 import { router, useFocusEffect } from 'expo-router';
@@ -14,6 +15,8 @@ import { File, Paths } from 'expo-file-system';
 import { ThemedText } from '@/components/themed-text';
 import { ConfirmDialog } from '@/components/ConfirmDialog';
 import { Snackbar } from '@/components/Snackbar';
+import { DesktopSidebar } from '@/components/DesktopSidebar';
+import { DesktopHeader } from '@/components/DesktopHeader';
 import { useTheme } from '@/hooks/use-theme';
 import { StorageService } from '@/services/storage';
 import { APP_CONFIG } from '@/constants/config';
@@ -23,6 +26,8 @@ import { Ionicons } from '@expo/vector-icons';
 
 export default function ProfileScreen() {
   const theme = useTheme();
+  const { width } = useWindowDimensions();
+  const isDesktop = width >= 880;
 
   const [items, setItems] = useState<LostFoundItem[]>([]);
   const [resetModalVisible, setResetModalVisible] = useState<boolean>(false);
@@ -96,18 +101,15 @@ export default function ProfileScreen() {
     setSnackbarVisible(true);
   };
 
-  return (
-    <SafeAreaView
-      style={[styles.safeArea, { backgroundColor: theme.background }]}
-      edges={['top', 'left', 'right']}>
-      <View style={styles.responsiveContainer}>
-        {/* Header */}
-        <View style={styles.header}>
-          <ThemedText style={styles.headerTitle}>Profile & Tools</ThemedText>
-          <ThemedText style={[styles.headerSubtitle, { color: theme.textSecondary }]}>
-            Account overview and local data management
-          </ThemedText>
-        </View>
+  const renderContent = () => (
+    <View style={styles.responsiveContainer}>
+      {/* Header */}
+      <View style={styles.header}>
+        <ThemedText style={styles.headerTitle}>Profile & Tools</ThemedText>
+        <ThemedText style={[styles.headerSubtitle, { color: theme.textSecondary }]}>
+          Account overview and local data management
+        </ThemedText>
+      </View>
 
       <ScrollView
         showsVerticalScrollIndicator={false}
@@ -317,12 +319,41 @@ export default function ProfileScreen() {
           onDismiss={() => setSnackbarVisible(false)}
         />
       </View>
+  );
+
+  return (
+    <SafeAreaView
+      style={[styles.safeArea, { backgroundColor: theme.background }]}
+      edges={['top', 'left', 'right']}>
+      {isDesktop ? (
+        <View style={styles.desktopLayoutRow}>
+          <DesktopSidebar activeRoute="profile" />
+          <View style={styles.desktopMainCol}>
+            <DesktopHeader />
+            <View style={styles.desktopContentArea}>{renderContent()}</View>
+          </View>
+        </View>
+      ) : (
+        renderContent()
+      )}
     </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
   safeArea: {
+    flex: 1,
+  },
+  desktopLayoutRow: {
+    flex: 1,
+    flexDirection: 'row',
+    height: '100%',
+  },
+  desktopMainCol: {
+    flex: 1,
+    height: '100%',
+  },
+  desktopContentArea: {
     flex: 1,
   },
   responsiveContainer: {

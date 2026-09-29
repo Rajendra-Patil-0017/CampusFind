@@ -5,6 +5,7 @@ import {
   ScrollView,
   Share,
   StyleSheet,
+  useWindowDimensions,
   View,
 } from 'react-native';
 import { router, useFocusEffect, useLocalSearchParams } from 'expo-router';
@@ -17,6 +18,8 @@ import { PrimaryButton } from '@/components/PrimaryButton';
 import { ConfirmDialog } from '@/components/ConfirmDialog';
 import { LoadingState } from '@/components/LoadingState';
 import { EmptyState } from '@/components/EmptyState';
+import { DesktopSidebar } from '@/components/DesktopSidebar';
+import { DesktopHeader } from '@/components/DesktopHeader';
 import { useTheme } from '@/hooks/use-theme';
 import { StorageService } from '@/services/storage';
 import { APP_CONFIG } from '@/constants/config';
@@ -28,6 +31,8 @@ import { Ionicons } from '@expo/vector-icons';
 
 export default function ItemDetailsScreen() {
   const theme = useTheme();
+  const { width } = useWindowDimensions();
+  const isDesktop = width >= 880;
   const { id } = useLocalSearchParams<{ id: string }>();
 
   const [item, setItem] = useState<LostFoundItem | null>(null);
@@ -132,24 +137,21 @@ export default function ItemDetailsScreen() {
   const isResolved = item.status === 'resolved';
   const isLost = item.type === 'lost';
 
-  return (
-    <SafeAreaView
-      style={[styles.safeArea, { backgroundColor: theme.background }]}
-      edges={['top', 'left', 'right']}>
-      <View style={styles.responsiveContainer}>
-        <ScreenHeader
-          title="Notice Details"
-          showBack
-          rightAction={{
-            icon: 'share-outline',
-            onPress: handleShare,
-            label: 'Share',
-          }}
-        />
+  const renderContent = () => (
+    <View style={styles.responsiveContainer}>
+      <ScreenHeader
+        title="Notice Details"
+        showBack
+        rightAction={{
+          icon: 'share-outline',
+          onPress: handleShare,
+          label: 'Share',
+        }}
+      />
 
-        <ScrollView
-          showsVerticalScrollIndicator={false}
-          contentContainerStyle={styles.scrollContent}>
+      <ScrollView
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={styles.scrollContent}>
         {/* Photo Banner or Icon Placeholder */}
         {item.imageUri ? (
           <View style={[styles.imageContainer, Shadows.card]}>
@@ -342,27 +344,57 @@ export default function ItemDetailsScreen() {
         onCancel={() => setDeleteModalVisible(false)}
       />
 
-        {/* Resolve Confirmation Modal */}
-        <ConfirmDialog
-          visible={resolveModalVisible}
-          title={isResolved ? 'Re-open Notice?' : 'Mark as Resolved?'}
-          message={
-            isResolved
-              ? 'This notice will become active again and appear in main campus searches.'
-              : 'Marking this item as resolved indicates it has been successfully returned to its rightful owner.'
-          }
-          confirmText={isResolved ? 'Re-open' : 'Mark Resolved'}
-          cancelText="Cancel"
-          icon="checkmark-circle-outline"
-          onConfirm={handleToggleResolved}
-          onCancel={() => setResolveModalVisible(false)}
-        />
+      {/* Resolve Confirmation Modal */}
+      <ConfirmDialog
+        visible={resolveModalVisible}
+        title={isResolved ? 'Re-open Notice?' : 'Mark as Resolved?'}
+        message={
+          isResolved
+            ? 'This notice will become active again and appear in main campus searches.'
+            : 'Marking this item as resolved indicates it has been successfully returned to its rightful owner.'
+        }
+        confirmText={isResolved ? 'Re-open' : 'Mark Resolved'}
+        cancelText="Cancel"
+        icon="checkmark-circle-outline"
+        onConfirm={handleToggleResolved}
+        onCancel={() => setResolveModalVisible(false)}
+      />
+    </View>
+  );
+
+  if (isDesktop) {
+    return (
+      <View style={[styles.desktopContainer, { backgroundColor: theme.background }]}>
+        <DesktopSidebar activeRoute="bulletin" />
+        <View style={styles.desktopMainArea}>
+          <DesktopHeader />
+          <View style={styles.desktopContentWrapper}>{renderContent()}</View>
+        </View>
       </View>
+    );
+  }
+
+  return (
+    <SafeAreaView
+      style={[styles.safeArea, { backgroundColor: theme.background }]}
+      edges={['top', 'left', 'right']}>
+      {renderContent()}
     </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
+  desktopContainer: {
+    flex: 1,
+    flexDirection: 'row',
+  },
+  desktopMainArea: {
+    flex: 1,
+  },
+  desktopContentWrapper: {
+    flex: 1,
+    paddingTop: 16,
+  },
   safeArea: {
     flex: 1,
   },

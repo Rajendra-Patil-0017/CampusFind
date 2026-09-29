@@ -1,8 +1,10 @@
 import React, { useState } from 'react';
-import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
+import { Pressable, ScrollView, StyleSheet, useWindowDimensions, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { ThemedText } from '@/components/themed-text';
 import { ScreenHeader } from '@/components/ScreenHeader';
+import { DesktopSidebar } from '@/components/DesktopSidebar';
+import { DesktopHeader } from '@/components/DesktopHeader';
 import { useTheme } from '@/hooks/use-theme';
 import { APP_CONFIG } from '@/constants/config';
 import { BorderRadius, Fonts, MaxContentWidth, ScreenPadding, Shadows, Spacing, Typography } from '@/constants/theme';
@@ -38,158 +40,186 @@ const FAQ_ITEMS: FAQItem[] = [
 
 export default function AboutScreen() {
   const theme = useTheme();
+  const { width } = useWindowDimensions();
+  const isDesktop = width >= 880;
   const [expandedIndex, setExpandedIndex] = useState<number | null>(0);
+
+  const renderContent = () => (
+    <View style={styles.responsiveContainer}>
+      <ScreenHeader title="Safety & FAQ" showBack />
+
+      <ScrollView
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={styles.scrollContent}>
+        {/* Academic Crest Banner */}
+        <View
+          style={[
+            styles.brandCard,
+            { backgroundColor: theme.card, borderColor: theme.border },
+            Shadows.card,
+          ]}>
+          <View
+            style={[
+              styles.logoBox,
+              { backgroundColor: theme.primaryLight, borderColor: theme.primary },
+            ]}>
+            <Ionicons name="school" size={32} color={theme.primary} />
+          </View>
+          <ThemedText style={[styles.appName, { color: theme.text }]}>{APP_CONFIG.name}</ThemedText>
+          <ThemedText style={[styles.tagline, { color: theme.teal }]}>
+            {APP_CONFIG.tagline}
+          </ThemedText>
+          <ThemedText style={[styles.version, { color: theme.textMuted }]}>
+            Academic Heritage Edition • v{APP_CONFIG.version}
+          </ThemedText>
+        </View>
+
+        {/* Campus Safety Protocol Guide */}
+        <ThemedText style={[styles.sectionHeader, { color: theme.textSecondary }]}>
+          CAMPUS SAFETY PROTOCOLS
+        </ThemedText>
+
+        <View
+          style={[
+            styles.sectionCard,
+            { backgroundColor: theme.card, borderColor: theme.border },
+            Shadows.subtle,
+          ]}>
+          {/* Safe Exchange Zones */}
+          <View style={styles.safetyRow}>
+            <View style={[styles.iconCircle, { backgroundColor: theme.primaryLight }]}>
+              <Ionicons name="shield-checkmark" size={18} color={theme.primary} />
+            </View>
+            <View style={styles.safetyCol}>
+              <ThemedText style={[styles.safetyHeading, { color: theme.text }]}>
+                Designated Safe Exchange Zones
+              </ThemedText>
+              <ThemedText style={[styles.safetyDesc, { color: theme.textSecondary }]}>
+                Conduct all handoffs in well-lit, staffed campus zones: Student Center Foyer, Central Library Desk, or Security Station.
+              </ThemedText>
+            </View>
+          </View>
+
+          <View style={[styles.divider, { backgroundColor: theme.border }]} />
+
+          {/* Ownership Verification */}
+          <View style={styles.safetyRow}>
+            <View style={[styles.iconCircle, { backgroundColor: theme.lostBg }]}>
+              <Ionicons name="checkmark-circle" size={18} color={theme.lost} />
+            </View>
+            <View style={styles.safetyCol}>
+              <ThemedText style={[styles.safetyHeading, { color: theme.text }]}>
+                Verify Ownership Before Handoff
+              </ThemedText>
+              <ThemedText style={[styles.safetyDesc, { color: theme.textSecondary }]}>
+                Ask claimants to identify unique stickers, device lock-screens, serial markers, or present their student ID before returning valuable electronics.
+              </ThemedText>
+            </View>
+          </View>
+
+          <View style={[styles.divider, { backgroundColor: theme.border }]} />
+
+          {/* Handling IDs & Valuables */}
+          <View style={styles.safetyRow}>
+            <View style={[styles.iconCircle, { backgroundColor: theme.accentLight }]}>
+              <Ionicons name="card" size={18} color={theme.teal} />
+            </View>
+            <View style={styles.safetyCol}>
+              <ThemedText style={[styles.safetyHeading, { color: theme.text }]}>
+                Handling Found IDs, Wallets & Keys
+              </ThemedText>
+              <ThemedText style={[styles.safetyDesc, { color: theme.textSecondary }]}>
+                Found Student IDs, government cards, and master keys should be turned in immediately to Campus Security for official holding.
+              </ThemedText>
+            </View>
+          </View>
+        </View>
+
+        {/* Frequently Asked Questions */}
+        <ThemedText style={[styles.sectionHeader, { color: theme.textSecondary, marginTop: Spacing.four }]}>
+          FREQUENTLY ASKED QUESTIONS
+        </ThemedText>
+
+        <View style={styles.faqList}>
+          {FAQ_ITEMS.map((item, index) => {
+            const isExpanded = expandedIndex === index;
+            return (
+              <Pressable
+                key={index}
+                onPress={() => setExpandedIndex(isExpanded ? null : index)}
+                style={[
+                  styles.faqCard,
+                  { backgroundColor: theme.card, borderColor: theme.border },
+                  Shadows.subtle,
+                ]}>
+                <View style={styles.faqHeader}>
+                  <ThemedText style={[styles.faqQuestion, { color: theme.text }]}>
+                    {item.question}
+                  </ThemedText>
+                  <Ionicons
+                    name={isExpanded ? 'chevron-up' : 'chevron-down'}
+                    size={18}
+                    color={theme.primary}
+                  />
+                </View>
+                {isExpanded && (
+                  <ThemedText style={[styles.faqAnswer, { color: theme.textSecondary }]}>
+                    {item.answer}
+                  </ThemedText>
+                )}
+              </Pressable>
+            );
+          })}
+        </View>
+
+        {/* Offline Architecture Note */}
+        <View
+          style={[
+            styles.offlineCard,
+            { backgroundColor: theme.elevatedSurface, borderColor: theme.border },
+          ]}>
+          <Ionicons name="lock-closed" size={16} color={theme.primary} />
+          <ThemedText style={[styles.offlineText, { color: theme.textSecondary }]}>
+            CampusFind operates offline on your device. Manage or export your local backups from the Profile & Tools tab.
+          </ThemedText>
+        </View>
+      </ScrollView>
+    </View>
+  );
 
   return (
     <SafeAreaView
       style={[styles.safeArea, { backgroundColor: theme.background }]}
       edges={['top', 'left', 'right']}>
-      <View style={styles.responsiveContainer}>
-        <ScreenHeader title="Safety & FAQ" showBack />
-
-        <ScrollView
-          showsVerticalScrollIndicator={false}
-          contentContainerStyle={styles.scrollContent}>
-          {/* Academic Crest Banner */}
-          <View
-            style={[
-              styles.brandCard,
-              { backgroundColor: theme.card, borderColor: theme.border },
-              Shadows.card,
-            ]}>
-            <View
-              style={[
-                styles.logoBox,
-                { backgroundColor: theme.primaryLight, borderColor: theme.primary },
-              ]}>
-              <Ionicons name="school" size={32} color={theme.primary} />
-            </View>
-            <ThemedText style={[styles.appName, { color: theme.text }]}>{APP_CONFIG.name}</ThemedText>
-            <ThemedText style={[styles.tagline, { color: theme.teal }]}>
-              {APP_CONFIG.tagline}
-            </ThemedText>
-            <ThemedText style={[styles.version, { color: theme.textMuted }]}>
-              Academic Heritage Edition • v{APP_CONFIG.version}
-            </ThemedText>
+      {isDesktop ? (
+        <View style={styles.desktopLayoutRow}>
+          <DesktopSidebar activeRoute="safety" />
+          <View style={styles.desktopMainCol}>
+            <DesktopHeader />
+            <View style={styles.desktopContentArea}>{renderContent()}</View>
           </View>
-
-          {/* Campus Safety Protocol Guide */}
-          <ThemedText style={[styles.sectionHeader, { color: theme.textSecondary }]}>
-            CAMPUS SAFETY PROTOCOLS
-          </ThemedText>
-
-          <View
-            style={[
-              styles.sectionCard,
-              { backgroundColor: theme.card, borderColor: theme.border },
-              Shadows.subtle,
-            ]}>
-            {/* Safe Exchange Zones */}
-            <View style={styles.safetyRow}>
-              <View style={[styles.iconCircle, { backgroundColor: theme.primaryLight }]}>
-                <Ionicons name="shield-checkmark" size={18} color={theme.primary} />
-              </View>
-              <View style={styles.safetyCol}>
-                <ThemedText style={[styles.safetyHeading, { color: theme.text }]}>
-                  Designated Safe Exchange Zones
-                </ThemedText>
-                <ThemedText style={[styles.safetyDesc, { color: theme.textSecondary }]}>
-                  Conduct all handoffs in well-lit, staffed campus zones: Student Center Foyer, Central Library Desk, or Security Station.
-                </ThemedText>
-              </View>
-            </View>
-
-            <View style={[styles.divider, { backgroundColor: theme.border }]} />
-
-            {/* Ownership Verification */}
-            <View style={styles.safetyRow}>
-              <View style={[styles.iconCircle, { backgroundColor: theme.lostBg }]}>
-                <Ionicons name="checkmark-circle" size={18} color={theme.lost} />
-              </View>
-              <View style={styles.safetyCol}>
-                <ThemedText style={[styles.safetyHeading, { color: theme.text }]}>
-                  Verify Ownership Before Handoff
-                </ThemedText>
-                <ThemedText style={[styles.safetyDesc, { color: theme.textSecondary }]}>
-                  Ask claimants to identify unique stickers, device lock-screens, serial markers, or present their student ID before returning valuable electronics.
-                </ThemedText>
-              </View>
-            </View>
-
-            <View style={[styles.divider, { backgroundColor: theme.border }]} />
-
-            {/* Handling IDs & Valuables */}
-            <View style={styles.safetyRow}>
-              <View style={[styles.iconCircle, { backgroundColor: theme.accentLight }]}>
-                <Ionicons name="card" size={18} color={theme.teal} />
-              </View>
-              <View style={styles.safetyCol}>
-                <ThemedText style={[styles.safetyHeading, { color: theme.text }]}>
-                  Handling Found IDs, Wallets & Keys
-                </ThemedText>
-                <ThemedText style={[styles.safetyDesc, { color: theme.textSecondary }]}>
-                  Found Student IDs, government cards, and master keys should be turned in immediately to Campus Security for official holding.
-                </ThemedText>
-              </View>
-            </View>
-          </View>
-
-          {/* Frequently Asked Questions */}
-          <ThemedText style={[styles.sectionHeader, { color: theme.textSecondary, marginTop: Spacing.four }]}>
-            FREQUENTLY ASKED QUESTIONS
-          </ThemedText>
-
-          <View style={styles.faqList}>
-            {FAQ_ITEMS.map((item, index) => {
-              const isExpanded = expandedIndex === index;
-              return (
-                <Pressable
-                  key={index}
-                  onPress={() => setExpandedIndex(isExpanded ? null : index)}
-                  style={[
-                    styles.faqCard,
-                    { backgroundColor: theme.card, borderColor: theme.border },
-                    Shadows.subtle,
-                  ]}>
-                  <View style={styles.faqHeader}>
-                    <ThemedText style={[styles.faqQuestion, { color: theme.text }]}>
-                      {item.question}
-                    </ThemedText>
-                    <Ionicons
-                      name={isExpanded ? 'chevron-up' : 'chevron-down'}
-                      size={18}
-                      color={theme.primary}
-                    />
-                  </View>
-                  {isExpanded && (
-                    <ThemedText style={[styles.faqAnswer, { color: theme.textSecondary }]}>
-                      {item.answer}
-                    </ThemedText>
-                  )}
-                </Pressable>
-              );
-            })}
-          </View>
-
-          {/* Offline Architecture Note */}
-          <View
-            style={[
-              styles.offlineCard,
-              { backgroundColor: theme.elevatedSurface, borderColor: theme.border },
-            ]}>
-            <Ionicons name="lock-closed" size={16} color={theme.primary} />
-            <ThemedText style={[styles.offlineText, { color: theme.textSecondary }]}>
-              CampusFind operates offline on your device. Manage or export your local backups from the Profile & Tools tab.
-            </ThemedText>
-          </View>
-        </ScrollView>
-      </View>
+        </View>
+      ) : (
+        renderContent()
+      )}
     </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
   safeArea: {
+    flex: 1,
+  },
+  desktopLayoutRow: {
+    flex: 1,
+    flexDirection: 'row',
+    height: '100%',
+  },
+  desktopMainCol: {
+    flex: 1,
+    height: '100%',
+  },
+  desktopContentArea: {
     flex: 1,
   },
   responsiveContainer: {

@@ -7,6 +7,7 @@ import {
   ScrollView,
   StyleSheet,
   TextInput,
+  useWindowDimensions,
   View,
 } from 'react-native';
 import { router, useLocalSearchParams } from 'expo-router';
@@ -17,6 +18,8 @@ import { ScreenHeader } from '@/components/ScreenHeader';
 import { PrimaryButton } from '@/components/PrimaryButton';
 import { CategoryPicker } from '@/components/CategoryPicker';
 import { LoadingState } from '@/components/LoadingState';
+import { DesktopSidebar } from '@/components/DesktopSidebar';
+import { DesktopHeader } from '@/components/DesktopHeader';
 import { useTheme } from '@/hooks/use-theme';
 import { StorageService } from '@/services/storage';
 import { ItemFormData, validateItemForm, ValidationErrors } from '@/utils/validation';
@@ -25,6 +28,8 @@ import { Ionicons } from '@expo/vector-icons';
 
 export default function EditPostScreen() {
   const theme = useTheme();
+  const { width } = useWindowDimensions();
+  const isDesktop = width >= 880;
   const { id } = useLocalSearchParams<{ id: string }>();
 
   const [loading, setLoading] = useState<boolean>(true);
@@ -155,14 +160,11 @@ export default function EditPostScreen() {
 
   const isLost = formData.type === 'lost';
 
-  return (
-    <SafeAreaView
-      style={[styles.safeArea, { backgroundColor: theme.background }]}
-      edges={['top', 'left', 'right']}>
-      <View style={styles.responsiveContainer}>
-        <ScreenHeader title="Edit Notice" showBack />
+  const renderContent = () => (
+    <View style={styles.responsiveContainer}>
+      <ScreenHeader title="Edit Notice" showBack />
 
-        <KeyboardAvoidingView
+      <KeyboardAvoidingView
           behavior={Platform.OS === 'ios' ? 'padding' : undefined}
           style={styles.keyboardAvoid}>
           <ScrollView
@@ -475,11 +477,41 @@ export default function EditPostScreen() {
           </ScrollView>
         </KeyboardAvoidingView>
       </View>
+  );
+
+  if (isDesktop) {
+    return (
+      <View style={[styles.desktopContainer, { backgroundColor: theme.background }]}>
+        <DesktopSidebar activeRoute="my-reports" />
+        <View style={styles.desktopMainArea}>
+          <DesktopHeader />
+          <View style={styles.desktopContentWrapper}>{renderContent()}</View>
+        </View>
+      </View>
+    );
+  }
+
+  return (
+    <SafeAreaView
+      style={[styles.safeArea, { backgroundColor: theme.background }]}
+      edges={['top', 'left', 'right']}>
+      {renderContent()}
     </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
+  desktopContainer: {
+    flex: 1,
+    flexDirection: 'row',
+  },
+  desktopMainArea: {
+    flex: 1,
+  },
+  desktopContentWrapper: {
+    flex: 1,
+    paddingTop: 16,
+  },
   safeArea: {
     flex: 1,
   },

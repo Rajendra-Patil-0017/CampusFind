@@ -7,6 +7,7 @@ import {
   ScrollView,
   StyleSheet,
   TextInput,
+  useWindowDimensions,
   View,
 } from 'react-native';
 import { router } from 'expo-router';
@@ -15,6 +16,8 @@ import * as ImagePicker from 'expo-image-picker';
 import { ThemedText } from '@/components/themed-text';
 import { PrimaryButton } from '@/components/PrimaryButton';
 import { CategoryPicker } from '@/components/CategoryPicker';
+import { DesktopSidebar } from '@/components/DesktopSidebar';
+import { DesktopHeader } from '@/components/DesktopHeader';
 import { useTheme } from '@/hooks/use-theme';
 import { StorageService } from '@/services/storage';
 import { ItemFormData, validateItemForm, ValidationErrors } from '@/utils/validation';
@@ -32,6 +35,8 @@ const CAMPUS_LOCATION_SUGGESTIONS = [
 
 export default function AddPostScreen() {
   const theme = useTheme();
+  const { width } = useWindowDimensions();
+  const isDesktop = width >= 880;
 
   const [formData, setFormData] = useState<ItemFormData>({
     type: 'lost',
@@ -132,21 +137,18 @@ export default function AddPostScreen() {
 
   const isLost = formData.type === 'lost';
 
-  return (
-    <SafeAreaView
-      style={[styles.safeArea, { backgroundColor: theme.background }]}
-      edges={['top', 'left', 'right']}>
-      <View style={styles.responsiveContainer}>
-        <KeyboardAvoidingView
-          behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-          style={styles.keyboardAvoid}>
-          {/* Header */}
-          <View style={styles.header}>
-            <ThemedText style={styles.headerTitle}>Report Item</ThemedText>
-            <ThemedText style={[styles.headerSubtitle, { color: theme.textSecondary }]}>
-              Submit a campus lost or found notice
-            </ThemedText>
-          </View>
+  const renderFormContent = () => (
+    <View style={styles.responsiveContainer}>
+      <KeyboardAvoidingView
+        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+        style={styles.keyboardAvoid}>
+        {/* Header */}
+        <View style={styles.header}>
+          <ThemedText style={styles.headerTitle}>Report Item</ThemedText>
+          <ThemedText style={[styles.headerSubtitle, { color: theme.textSecondary }]}>
+            Submit an official campus lost or found notice
+          </ThemedText>
+        </View>
 
         <ScrollView
           showsVerticalScrollIndicator={false}
@@ -517,14 +519,43 @@ export default function AddPostScreen() {
             />
           </View>
         </ScrollView>
-        </KeyboardAvoidingView>
-      </View>
+      </KeyboardAvoidingView>
+    </View>
+  );
+
+  return (
+    <SafeAreaView
+      style={[styles.safeArea, { backgroundColor: theme.background }]}
+      edges={['top', 'left', 'right']}>
+      {isDesktop ? (
+        <View style={styles.desktopLayoutRow}>
+          <DesktopSidebar activeRoute="add" />
+          <View style={styles.desktopMainCol}>
+            <DesktopHeader />
+            <View style={styles.desktopContentArea}>{renderFormContent()}</View>
+          </View>
+        </View>
+      ) : (
+        renderFormContent()
+      )}
     </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
   safeArea: {
+    flex: 1,
+  },
+  desktopLayoutRow: {
+    flex: 1,
+    flexDirection: 'row',
+    height: '100%',
+  },
+  desktopMainCol: {
+    flex: 1,
+    height: '100%',
+  },
+  desktopContentArea: {
     flex: 1,
   },
   responsiveContainer: {

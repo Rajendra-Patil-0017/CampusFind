@@ -42,7 +42,7 @@ export function ItemCard({ item, onPress, showStatus = true }: ItemCardProps) {
         },
         Shadows.card,
       ]}>
-      {/* Media Thumbnail or Category Graphic */}
+      {/* Media Banner with Overlaid Badges */}
       <View style={styles.mediaContainer}>
         {item.imageUri ? (
           <Image
@@ -62,7 +62,7 @@ export function ItemCard({ item, onPress, showStatus = true }: ItemCardProps) {
             ]}>
             <Ionicons
               name={categoryIcon}
-              size={28}
+              size={36}
               color={isLost ? theme.lost : theme.found}
             />
             <ThemedText
@@ -74,34 +74,31 @@ export function ItemCard({ item, onPress, showStatus = true }: ItemCardProps) {
             </ThemedText>
           </View>
         )}
-      </View>
 
-      {/* Editorial Content Block */}
-      <View style={styles.content}>
-        {/* Badges & Category Header */}
-        <View style={styles.badgeRow}>
+        {/* Top-Left Overlaid Status Badge */}
+        <View style={styles.overlayTopLeft}>
           <StatusBadge type={item.type} size="sm" />
           {showStatus && isResolved && (
             <StatusBadge status={item.status} size="sm" />
           )}
-          <View
-            style={[
-              styles.categoryPill,
-              { backgroundColor: theme.elevatedSurface, borderColor: theme.border },
-            ]}>
-            <Ionicons name={categoryIcon} size={11} color={theme.textSecondary} style={{ marginRight: 3 }} />
-            <ThemedText style={[styles.categoryText, { color: theme.textSecondary }]}>
-              {item.category}
-            </ThemedText>
-          </View>
         </View>
 
-        {/* 1. Item Title in Academic Serif */}
-        <ThemedText style={[styles.title, { color: theme.text }]} numberOfLines={2}>
-          {item.name}
-        </ThemedText>
+        {/* Top-Right Category Pill */}
+        <View
+          style={[
+            styles.categoryOverlayPill,
+            { backgroundColor: 'rgba(255, 255, 255, 0.92)', borderColor: theme.border },
+          ]}>
+          <Ionicons name={categoryIcon} size={11} color={theme.textSecondary} style={{ marginRight: 3 }} />
+          <ThemedText style={[styles.categoryText, { color: theme.textSecondary }]}>
+            {item.category}
+          </ThemedText>
+        </View>
+      </View>
 
-        {/* 2. Location & Date */}
+      {/* Editorial Content Block */}
+      <View style={styles.content}>
+        {/* Date & Location Meta Row */}
         <View style={styles.metaRow}>
           <View style={styles.metaItem}>
             <Ionicons name="location" size={12} color={theme.primary} style={{ marginRight: 3 }} />
@@ -120,7 +117,12 @@ export function ItemCard({ item, onPress, showStatus = true }: ItemCardProps) {
           </View>
         </View>
 
-        {/* 3. Description excerpt */}
+        {/* Serif Item Title */}
+        <ThemedText style={[styles.title, { color: theme.text }]} numberOfLines={2}>
+          {item.name}
+        </ThemedText>
+
+        {/* Short Description */}
         {item.description ? (
           <ThemedText
             style={[styles.description, { color: theme.textSecondary }]}
@@ -129,8 +131,8 @@ export function ItemCard({ item, onPress, showStatus = true }: ItemCardProps) {
           </ThemedText>
         ) : null}
 
-        {/* 4. Action Footer */}
-        <View style={styles.footerRow}>
+        {/* Card Footer Button */}
+        <View style={[styles.footerRow, { borderTopColor: theme.border }]}>
           <ThemedText style={[styles.viewDetailsText, { color: theme.primary }]}>
             View Details
           </ThemedText>
@@ -145,49 +147,53 @@ const styles = StyleSheet.create({
   card: {
     borderRadius: BorderRadius.lg,
     borderWidth: 1,
-    padding: Spacing.three + 2,
-    marginBottom: Spacing.three,
+    padding: Spacing.three,
+    marginBottom: Spacing.four,
     backgroundColor: '#FFFFFF',
     overflow: 'hidden',
   },
   mediaContainer: {
+    position: 'relative',
     marginBottom: Spacing.three,
+    borderRadius: BorderRadius.md,
+    overflow: 'hidden',
   },
   thumbnail: {
     width: '100%',
-    height: 140,
+    height: 155,
     borderRadius: BorderRadius.md,
     borderWidth: 1,
   },
   placeholder: {
     width: '100%',
-    height: 100,
+    height: 140,
     borderRadius: BorderRadius.md,
     borderWidth: 1,
     alignItems: 'center',
     justifyContent: 'center',
-    gap: 4,
+    gap: 6,
   },
   placeholderTag: {
     fontSize: Typography.xs,
-    fontWeight: '600',
-    letterSpacing: 0.2,
+    fontWeight: '700',
+    letterSpacing: 0.3,
   },
-  content: {
-    flex: 1,
-  },
-  badgeRow: {
+  overlayTopLeft: {
+    position: 'absolute',
+    top: 8,
+    left: 8,
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 6,
-    flexWrap: 'wrap',
-    marginBottom: Spacing.two,
+    gap: 4,
   },
-  categoryPill: {
+  categoryOverlayPill: {
+    position: 'absolute',
+    top: 8,
+    right: 8,
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 7,
-    paddingVertical: 2.5,
+    paddingHorizontal: 8,
+    paddingVertical: 3,
     borderRadius: BorderRadius.xs,
     borderWidth: 1,
   },
@@ -195,19 +201,14 @@ const styles = StyleSheet.create({
     fontSize: Typography.xs,
     fontWeight: '600',
   },
-  title: {
-    fontFamily: Fonts.serif,
-    fontSize: 17,
-    fontWeight: '700',
-    lineHeight: 22,
-    letterSpacing: -0.2,
-    marginBottom: 6,
+  content: {
+    flex: 1,
   },
   metaRow: {
     flexDirection: 'row',
     alignItems: 'center',
     flexWrap: 'wrap',
-    marginBottom: 6,
+    marginBottom: 5,
     gap: 4,
   },
   metaItem: {
@@ -223,19 +224,25 @@ const styles = StyleSheet.create({
     fontSize: Typography.xs,
     marginHorizontal: 2,
   },
+  title: {
+    fontFamily: Fonts.serif,
+    fontSize: 17,
+    fontWeight: '700',
+    lineHeight: 22,
+    letterSpacing: -0.2,
+    marginBottom: 6,
+  },
   description: {
     fontSize: Typography.sm,
     lineHeight: 19,
-    marginBottom: Spacing.two,
+    marginBottom: Spacing.three,
   },
   footerRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 4,
-    marginTop: 2,
-    paddingTop: 6,
+    justifyContent: 'space-between',
+    paddingTop: 8,
     borderTopWidth: 1,
-    borderTopColor: '#F0ECE1',
   },
   viewDetailsText: {
     fontSize: Typography.xs,
