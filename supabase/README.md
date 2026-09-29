@@ -1,99 +1,89 @@
-# CampusFind Database & Security Architecture (Part 2)
+# CampusFind Database & Security Architecture
 
-This directory contains the versioned PostgreSQL migrations, Row Level Security (RLS) policies, and test suites for **CampusFind**.
-
----
-
-## 1. Tables & Schema Overview
-
-### `public.profiles`
-Stores extended user profile information matching authenticated Supabase Auth users.
-- **`id`** (`UUID`, Primary Key): References `auth.users(id)` with `ON DELETE CASCADE`.
-- **`full_name`** (`TEXT`, Required): User's legal or campus name ($1 \le \text{length} \le 100$).
-- **`avatar_url`** (`TEXT`, Nullable): Link to user avatar image.
-- **`created_at`** / **`updated_at`** (`TIMESTAMPTZ`): Automatic timestamps.
-
-### `public.lost_found_items`
-Contains non-sensitive public bulletin lost & found listings.
-- **`id`** (`UUID`, Primary Key): Auto-generated `gen_random_uuid()`.
-- **`owner_id`** (`UUID`, Foreign Key): References `auth.users(id)` with `ON DELETE CASCADE`.
-- **`type`** (`TEXT`, Required): `'lost'` | `'found'`.
-- **`status`** (`TEXT`, Required): `'active'` | `'resolved'`.
-- **`name`** (`TEXT`, Required): Item title ($1 \le \text{length} \le 120$).
-- **`description`** (`TEXT`, Required): Item description ($1 \le \text{length} \le 2000$).
-- **`category`** (`TEXT`, Required): Item category ($1 \le \text{length} \le 50$).
-- **`location`** (`TEXT`, Required): Campus location ($1 \le \text{length} \le 120$).
-- **`date`** (`TIMESTAMPTZ`, Required): Date when item was lost or found.
-- **`image_path`** (`TEXT`, Nullable): Supabase Storage path/URL.
-- **`is_sample`** (`BOOLEAN`): Tracks demo/sample records.
-- **`created_at`** / **`updated_at`** (`TIMESTAMPTZ`): Automatic timestamps.
-
-### `public.item_contact_details`
-Isolates private contact details (e.g. phone numbers or personal emails) so that public bulletin queries do not leak sensitive personal information.
-- **`item_id`** (`UUID`, Primary Key): References `public.lost_found_items(id)` with `ON DELETE CASCADE`.
-- **`contact_name`** (`TEXT`, Required): Full name of the contact person.
-- **`contact_info`** (`TEXT`, Required): Email or phone number.
-- **`updated_at`** (`TIMESTAMPTZ`): Automatic timestamp.
+This directory contains the PostgreSQL migrations, Row Level Security (RLS) policies, and test suites for **CampusFind**.
 
 ---
 
-## 2. Row Level Security (RLS) Policies
+## 1. Canonical Database Architecture
 
-| Table | Operation | Role | Policy Rule |
-| :--- | :--- | :--- | :--- |
-| `profiles` | `SELECT` | `authenticated` | `USING (true)` |
-| `profiles` | `INSERT` | `authenticated` | `WITH CHECK (auth.uid() = id)` |
-| `profiles` | `UPDATE` | `authenticated` | `USING (auth.uid() = id) WITH CHECK (auth.uid() = id)` |
-| `lost_found_items` | `SELECT` | `authenticated` | `USING (true)` |
-| `lost_found_items` | `INSERT` | `authenticated` | `WITH CHECK (auth.uid() = owner_id)` |
-| `lost_found_items` | `UPDATE` | `authenticated` | `USING (auth.uid() = owner_id) WITH CHECK (auth.uid() = owner_id)` |
-| `lost_found_items` | `DELETE` | `authenticated` | `USING (auth.uid() = owner_id)` |
-| `item_contact_details` | `SELECT` | `authenticated` | `EXISTS (SELECT 1 FROM lost_found_items WHERE id = item_id AND owner_id = auth.uid())` |
-| `item_contact_details` | `INSERT` | `authenticated` | `EXISTS (SELECT 1 FROM lost_found_items WHERE id = item_id AND owner_id = auth.uid())` |
-| `item_contact_details` | `UPDATE` | `authenticated` | `EXISTS (SELECT 1 FROM lost_found_items WHERE id = item_id AND owner_id = auth.uid())` |
-| `item_contact_details` | `DELETE` | `authenticated` | `EXISTS (SELECT 1 FROM lost_found_items WHERE id = item_id AND owner_id = auth.uid())` |
+The application standardizes on **`public.items`** as the canonical lost & found notices table, with **`public.profiles`** for user profile records.
+
+```
+ ┌──────────────────────┐
+ │     auth.users       │
+ └──────────┬───────────┘
+            │ 1:1 (ON DELETE CASCADE)
+            ├─────────────────────────────────────────┐
+            │                                         │ 1:N (ON DELETE CASCADE)
+ ┌──────────▼───────────┐                  ┌──────────▼───────────┐
+ │   public.profiles    │                  │     public.items     │
+ │ - id (UUID, PK)      │                  │ - id (UUID, PK)      │
+ │ - full_name          │                  │ - owner_id (UUID, FK)│
+ │ - avatar_url         │                  │ - type (lost/found)  │
+ │ - created_at         │                  │ - status (active/res)│
+ │ - updated_at         │                  │ - name, description  │
+ └──────────┬───────────┘                  │ - category, location │
+            │ (Safe Public View)           │ - date, image_path   │
+ ┌──────────▼───────────┐                  │ - contact_name       │
+ │public.public_profiles│                  │ - contact_info       │
+ └──────────────────────┘                  │ - is_sample          │
+                                           └──────────────────────┘
+```
+
+### Tables
+1. **`public.profiles`**:
+   - `id UUID PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE`
+   - `full_name TEXT NOT NULL`
+   - `avatar_url TEXT`
+   - `created_at` / `updated_at` `TIMESTAMPTZ`
+2. **`public.items`**:
+   - `id UUID PRIMARY KEY DEFAULT gen_random_uuid()`
+   - `owner_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE`
+   - `type TEXT NOT NULL CHECK (type IN ('lost', 'found'))`
+   - `status TEXT NOT NULL CHECK (status IN ('active', 'resolved')) DEFAULT 'active'`
+   - `name TEXT NOT NULL CHECK (char_length(trim(name)) > 0 AND char_length(name) <= 120)`
+   - `description TEXT NOT NULL CHECK (char_length(trim(description)) > 0 AND char_length(description) <= 2000)`
+   - `category TEXT NOT NULL CHECK (char_length(trim(category)) > 0 AND char_length(category) <= 50)`
+   - `location TEXT NOT NULL CHECK (char_length(trim(location)) > 0 AND char_length(location) <= 120)`
+   - `date TIMESTAMPTZ NOT NULL DEFAULT now()`
+   - `contact_name TEXT NOT NULL`
+   - `contact_info TEXT NOT NULL`
+   - `image_path TEXT`
+   - `is_sample BOOLEAN NOT NULL DEFAULT false`
+   - `created_at` / `updated_at` `TIMESTAMPTZ`
 
 ---
 
-## 3. Database Indexes
+## 2. Hardened Row Level Security (RLS) Policy Summary
 
-- `idx_lost_found_items_owner_id`: Fast filtering by owner in "My Reports".
-- `idx_lost_found_items_type`: Fast filtering by `lost` vs `found`.
-- `idx_lost_found_items_status`: Fast filtering by `active` vs `resolved`.
-- `idx_lost_found_items_category`: Fast filtering by category.
-- `idx_lost_found_items_created_at`: Chronological ordering.
-- `idx_lost_found_items_feed`: Multi-column composite index on `(status, type, created_at DESC)` for high-throughput bulletin feeds.
-- `idx_lost_found_items_search`: GIN Full-Text Search index on `(name || ' ' || description || ' ' || location)`.
-
----
-
-## 4. How to Apply Migration
-
-1. Open your **[Supabase Dashboard](https://supabase.com/dashboard)**.
-2. Select your project: `pymgbepgpiqjzonihjem`.
-3. Open the **SQL Editor** from the left sidebar.
-4. Copy the entire content of [`supabase/migrations/20260929_part2_database_schema_and_security.sql`](file:///c:/Users/Rajendra/OneDrive/Desktop/campusfind/supabase/migrations/20260929_part2_database_schema_and_security.sql).
-5. Click **Run**.
+| Table | Operation | Role | Policy Rule | Security Objective |
+| :--- | :--- | :--- | :--- | :--- |
+| `profiles` | `SELECT` | `authenticated` | `USING (auth.uid() = id)` | **Private Profile**: Users can only read their own profile row |
+| `profiles` | `INSERT` | `authenticated` | `WITH CHECK (auth.uid() = id)` | **Identity Isolation**: Prevents inserting records for another user |
+| `profiles` | `UPDATE` | `authenticated` | `USING (auth.uid() = id) WITH CHECK (auth.uid() = id)` | **Owner-Only**: Users can only modify their own profile |
+| `items` | `SELECT` | `all` | `USING (true)` | **Public Bulletin**: Allows public browsing of lost & found posts |
+| `items` | `INSERT` | `authenticated` | `WITH CHECK (auth.uid() = owner_id)` | **Anti-Spoofing**: Blocks inserting posts under another user's ID |
+| `items` | `UPDATE` | `authenticated` | `USING (auth.uid() = owner_id) WITH CHECK (auth.uid() = owner_id)` | **Anti-Hijacking**: Only owners can update posts; `owner_id` cannot change |
+| `items` | `DELETE` | `authenticated` | `USING (auth.uid() = owner_id)` | **Owner-Only**: Only the post author can delete their notice |
+| `storage.objects` | `SELECT` | `all` | `USING (bucket_id = 'item-photos')` | **Public Images**: Item photos can be displayed on cards |
+| `storage.objects` | `INSERT` | `authenticated` | `WITH CHECK ((storage.foldername(name))[1] = auth.uid()::text)` | **Folder Isolation**: Users can only upload to `${userId}/*` |
+| `storage.objects` | `DELETE` | `authenticated` | `USING (auth.uid()::text = (storage.foldername(name))[1])` | **File Protection**: Users cannot delete another user's uploads |
 
 ---
 
-## 5. How to Run Automated Security & RLS Tests
+## 3. SQL Migrations
 
-1. In the Supabase **SQL Editor**, paste the content of [`supabase/tests/security_tests.sql`](file:///c:/Users/Rajendra/OneDrive/Desktop/campusfind/supabase/tests/security_tests.sql).
+1. [`supabase/migrations/20260929_init_campusfind.sql`](file:///c:/Users/Rajendra/OneDrive/Desktop/campusfind/supabase/migrations/20260929_init_campusfind.sql): Initial schema definition and triggers.
+2. [`supabase/migrations/20260929_security_audit_fixes.sql`](file:///c:/Users/Rajendra/OneDrive/Desktop/campusfind/supabase/migrations/20260929_security_audit_fixes.sql): Hardening migration fixing broad profile SELECT access and standardizing on canonical `items` table.
+
+---
+
+## 4. Running the Two-Account Verification Suite
+
+In the [Supabase SQL Editor](https://supabase.com/dashboard/project/pymgbepgpiqjzonihjem/sql):
+1. Open and paste [`supabase/tests/audit_verification_tests.sql`](file:///c:/Users/Rajendra/OneDrive/Desktop/campusfind/supabase/tests/audit_verification_tests.sql).
 2. Click **Run**.
-3. The script will execute a transaction simulating User A, User B, and unauthenticated roles, outputting:
-   ```text
-   NOTICE:  === Running CampusFind Security & RLS Test Suite ===
-   NOTICE:  TEST 1 PASSED: User A can create their own profile.
-   NOTICE:  TEST 2 PASSED: User A cannot create profile for User B.
-   NOTICE:  TEST 3 PASSED: User A can create a report with owner_id = User A.
-   NOTICE:  TEST 4 PASSED: User A can attach private contact details to Item A.
-   NOTICE:  TEST 5 PASSED: User A cannot create report owned by User B.
-   NOTICE:  TEST 6 PASSED: User B created profile and Item B with private contact info.
-   NOTICE:  TEST 7 PASSED: User B cannot read User A private contact details (0 rows returned).
-   NOTICE:  TEST 8 PASSED: User B cannot update User A report (0 rows modified).
-   NOTICE:  TEST 9 PASSED: User B cannot delete User A report (Item A still exists).
-   NOTICE:  TEST 10 PASSED: Anonymous / Unauthenticated users cannot create reports.
-   NOTICE:  === ALL 10 SECURITY & RLS TESTS PASSED SUCCESSFULLY! ===
-   ```
-4. The test uses `ROLLBACK;` so test records are automatically cleaned up without leaving mock records in your database.
+3. All 14 cross-user and unauthenticated isolation test cases execute in a safe, rolled-back transaction:
+   - Profile isolation between User A and User B
+   - Cross-user update/delete/chown prevention on reports
+   - Anonymous write rejections
