@@ -57,10 +57,13 @@ export const ItemsService = {
           .order('created_at', { ascending: false });
 
         if (!error && data) {
-          const mapped = data.map(mapRowToItem);
-          // Cache items locally for offline resilience
-          await AsyncStorage.setItem(APP_CONFIG.storageKeyItems, JSON.stringify(mapped));
-          return mapped;
+          if (data.length > 0) {
+            const mapped = data.map(mapRowToItem);
+            // Cache items locally for offline resilience
+            await AsyncStorage.setItem(APP_CONFIG.storageKeyItems, JSON.stringify(mapped));
+            return mapped;
+          }
+          return SAMPLE_ITEMS;
         }
       } catch (e) {
         console.warn('Supabase getItems network error, reading local cache:', e);
