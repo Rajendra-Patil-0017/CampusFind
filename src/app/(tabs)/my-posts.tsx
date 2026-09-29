@@ -345,7 +345,7 @@ const styles = StyleSheet.create({
   listContent: {
     paddingHorizontal: ScreenPadding,
     paddingTop: Spacing.one,
-    paddingBottom: 100,
+    paddingBottom: 120,
   },
   postWrapper: {
     marginBottom: Spacing.four,

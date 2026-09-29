@@ -2,7 +2,7 @@ import React from 'react';
 import { Tabs } from 'expo-router';
 import { Platform } from 'react-native';
 import { useTheme } from '@/hooks/use-theme';
-import { MaxContentWidth, Typography } from '@/constants/theme';
+import { Typography } from '@/constants/theme';
 import { Ionicons } from '@expo/vector-icons';
 
 export default function TabLayout() {
@@ -22,19 +22,7 @@ export default function TabLayout() {
           paddingBottom: Platform.select({ ios: 24, android: 10, default: 10 }),
           paddingTop: 8,
           elevation: 4,
-          maxWidth: MaxContentWidth,
           width: '100%',
-          alignSelf: 'center',
-          ...(Platform.OS === 'web'
-            ? ({
-                left: '50%',
-                transform: 'translateX(-50%)',
-                borderLeftWidth: 1,
-                borderRightWidth: 1,
-                borderLeftColor: theme.border,
-                borderRightColor: theme.border,
-              } as any)
-            : {}),
         },
         tabBarLabelStyle: {
           fontSize: Typography.xs,

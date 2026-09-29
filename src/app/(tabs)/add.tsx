@@ -552,7 +552,7 @@ const styles = StyleSheet.create({
   },
   scrollContent: {
     paddingHorizontal: ScreenPadding,
-    paddingBottom: 90,
+    paddingBottom: 120,
   },
   section: {
     marginTop: Spacing.four,

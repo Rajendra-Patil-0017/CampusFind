@@ -97,7 +97,7 @@ export default function HomeScreen() {
       style={[styles.safeArea, { backgroundColor: theme.background }]}
       edges={['top', 'left', 'right']}>
       <View style={styles.responsiveContainer}>
-        {/* Header — Clean title & tagline without duplicate Report button (Issue #5) */}
+        {/* Header — Clean title & tagline with header Report button */}
         <View style={styles.header}>
           <View style={styles.titleArea}>
             <ThemedText style={styles.headerTitle}>CampusFind</ThemedText>
@@ -105,6 +105,13 @@ export default function HomeScreen() {
               Find It. Report It. Return It.
             </ThemedText>
           </View>
+          <PrimaryButton
+            title="Report"
+            icon="add"
+            size="sm"
+            onPress={() => router.push('/(tabs)/add')}
+            style={styles.headerReportBtn}
+          />
         </View>
 
         {/* Search Bar — Clean input without ambiguous toggle filter button (Issue #4) */}
@@ -395,9 +402,13 @@ const styles = StyleSheet.create({
     alignSelf: 'center',
   },
   header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
     paddingHorizontal: ScreenPadding,
     paddingTop: Spacing.three,
     paddingBottom: Spacing.one,
+    gap: Spacing.two,
   },
   titleArea: {
     flex: 1,
@@ -410,6 +421,10 @@ const styles = StyleSheet.create({
   headerSubtitle: {
     fontSize: Typography.sm,
     marginTop: 1,
+  },
+  headerReportBtn: {
+    paddingHorizontal: 14,
+    paddingVertical: 8,
   },
   searchSection: {
     paddingHorizontal: ScreenPadding,
@@ -456,7 +471,7 @@ const styles = StyleSheet.create({
   },
   listContent: {
     paddingHorizontal: ScreenPadding,
-    paddingBottom: 100,
+    paddingBottom: 120,
   },
   modalOverlay: {
     flex: 1,

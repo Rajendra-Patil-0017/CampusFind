@@ -149,7 +149,8 @@ export function CategoryPicker({
 const styles = StyleSheet.create({
   horizontalContent: {
     paddingVertical: 2,
-    paddingHorizontal: Spacing.four,
+    paddingLeft: Spacing.four,
+    paddingRight: Spacing.six + 12,
     gap: 6,
   },
   horizontalItem: {
