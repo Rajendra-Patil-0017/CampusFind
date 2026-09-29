@@ -27,6 +27,7 @@ export default function RegisterScreen() {
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [successMsg, setSuccessMsg] = useState<string | null>(null);
@@ -209,10 +210,20 @@ export default function RegisterScreen() {
                     }}
                     placeholder="Re-enter password"
                     placeholderTextColor={theme.textMuted}
-                    secureTextEntry={!showPassword}
+                    secureTextEntry={!showConfirmPassword}
                     autoCapitalize="none"
                     style={[styles.input, { color: theme.text }]}
                   />
+                  <Pressable
+                    onPress={() => setShowConfirmPassword((prev) => !prev)}
+                    hitSlop={8}
+                    style={styles.eyeBtn}>
+                    <Ionicons
+                      name={showConfirmPassword ? 'eye-off-outline' : 'eye-outline'}
+                      size={18}
+                      color={theme.textSecondary}
+                    />
+                  </Pressable>
                 </View>
               </View>
 
