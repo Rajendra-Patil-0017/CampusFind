@@ -21,7 +21,7 @@ import { useTheme } from '@/hooks/use-theme';
 import { StorageService } from '@/services/storage';
 import { FilterState, ItemSortOption, LostFoundItem } from '@/types/item';
 import { applyFiltersAndSort } from '@/utils/filters';
-import { BorderRadius, Spacing } from '@/constants/theme';
+import { BorderRadius, ScreenPadding, Shadows, Spacing } from '@/constants/theme';
 import { Ionicons } from '@expo/vector-icons';
 
 export default function HomeScreen() {
@@ -98,14 +98,14 @@ export default function HomeScreen() {
       {/* Campus Notice Board Header */}
       <View style={styles.header}>
         <View style={styles.titleArea}>
-          <ThemedText style={styles.headerTitle}>Campus Bulletin</ThemedText>
+          <ThemedText style={styles.headerTitle}>CampusFind</ThemedText>
           <ThemedText style={[styles.headerSubtitle, { color: theme.textSecondary }]}>
-            Live Lost & Found Directory
+            Find It. Report It. Return It.
           </ThemedText>
         </View>
 
         <PrimaryButton
-          title="Report Item"
+          title="Report"
           icon="add"
           size="sm"
           onPress={() => router.push('/(tabs)/add')}
@@ -124,7 +124,7 @@ export default function HomeScreen() {
         />
       </View>
 
-      {/* Notice Type Filter Tabs */}
+      {/* Notice Type Filter Chips */}
       <View style={styles.filterRow}>
         <FilterChip
           label="All"
@@ -157,64 +157,51 @@ export default function HomeScreen() {
             }))
           }
         />
-
-        {/* Resolution Toggle */}
-        <Pressable
+        {/* Status Archive Filter */}
+        <FilterChip
+          label="Resolved"
+          icon="archive-outline"
+          selected={filters.status === 'resolved'}
           onPress={() =>
             setFilters((prev) => ({
               ...prev,
-              status: prev.status === 'active' ? 'all' : 'active',
+              status: prev.status === 'resolved' ? 'active' : 'resolved',
             }))
           }
-          style={[
-            styles.resolutionToggle,
-            {
-              backgroundColor:
-                filters.status === 'all' ? theme.primaryLight : theme.card,
-              borderColor:
-                filters.status === 'all' ? theme.primary : theme.borderStrong,
-            },
-          ]}>
-          <ThemedText
-            style={[
-              styles.resolutionToggleText,
-              {
-                color: filters.status === 'all' ? theme.primary : theme.textSecondary,
-              },
-            ]}>
-            {filters.status === 'all' ? 'Inc. Resolved' : 'Active Only'}
-          </ThemedText>
-        </Pressable>
+        />
       </View>
 
-      {/* Category Horizontal Scroller */}
+      {/* Horizontal Category Strip */}
       <View style={styles.categorySection}>
         <CategoryPicker
           horizontal
           includeAll
           selectedCategory={filters.category}
-          onSelectCategory={(cat) => setFilters((prev) => ({ ...prev, category: cat }))}
+          onSelectCategory={(category) => setFilters((prev) => ({ ...prev, category }))}
         />
       </View>
 
-      {/* Active Filter Counter & Reset */}
-      {hasActiveFilters && (
-        <View style={styles.activeFiltersBar}>
-          <ThemedText style={[styles.filterCountText, { color: theme.textSecondary }]}>
-            {filteredItems.length} {filteredItems.length === 1 ? 'item found' : 'items found'}
-          </ThemedText>
-          <Pressable onPress={resetFilters} style={styles.clearBtn}>
-            <Ionicons name="close-circle" size={13} color={theme.lost} />
-            <ThemedText style={[styles.clearBtnText, { color: theme.lost }]}>
-              Reset Filters
-            </ThemedText>
-          </Pressable>
-        </View>
-      )}
+      {/* Active Filter Indicators / Results Meta */}
+      <View style={styles.metaRow}>
+        <ThemedText style={[styles.resultsCount, { color: theme.textSecondary }]}>
+          {filteredItems.length} {filteredItems.length === 1 ? 'item' : 'items'}
+          {filters.category !== 'all' ? ` in ${filters.category}` : ''}
+          {filters.status === 'resolved' ? ' (Resolved)' : ''}
+        </ThemedText>
 
-      {/* Feed List */}
+        <Pressable
+          onPress={() => setSortModalVisible(true)}
+          style={styles.sortButton}>
+          <ThemedText style={[styles.sortText, { color: theme.primary }]}>
+            {sortLabels[filters.sortBy]}
+          </ThemedText>
+          <Ionicons name="chevron-down" size={14} color={theme.primary} />
+        </Pressable>
+      </View>
+
+      {/* Main Listing Feed */}
       {loading ? (
-        <LoadingState message="Fetching campus records..." />
+        <LoadingState message="Loading campus bulletin..." />
       ) : (
         <FlatList
           data={filteredItems}
@@ -222,7 +209,7 @@ export default function HomeScreen() {
           renderItem={({ item }) => (
             <ItemCard
               item={item}
-              onPress={(i) => router.push(`/item/${i.id}` as any)}
+              onPress={(selected) => router.push(`/item/${selected.id}` as any)}
             />
           )}
           contentContainerStyle={styles.listContent}
@@ -236,97 +223,151 @@ export default function HomeScreen() {
             />
           }
           ListEmptyComponent={
-            items.length === 0 ? (
-              <EmptyState
-                icon="newspaper-outline"
-                title="Notice Board is Empty"
-                description="No items have been registered on campus yet. Be the first to report."
-                actionTitle="Report Item"
-                actionIcon="add-circle"
-                onAction={() => router.push('/(tabs)/add')}
-              />
-            ) : (
-              <EmptyState
-                icon="search-outline"
-                title="No Matching Records"
-                description="No items match your active search terms or selected category filter."
-                actionTitle="Reset Filters"
-                actionIcon="refresh"
-                onAction={resetFilters}
-              />
-            )
+            <EmptyState
+              icon="search-outline"
+              title="No Listings Found"
+              description={
+                hasActiveFilters
+                  ? 'No notices match your current filters or search keywords.'
+                  : 'There are no active lost or found posts on campus yet.'
+              }
+              actionTitle={hasActiveFilters ? 'Clear Filters' : 'Report an Item'}
+              actionIcon={hasActiveFilters ? 'refresh-outline' : 'add'}
+              onAction={hasActiveFilters ? resetFilters : () => router.push('/(tabs)/add')}
+            />
           }
         />
       )}
 
-      {/* Sort Options Modal */}
+      {/* Sort & Filter Bottom Modal */}
       <Modal
         visible={sortModalVisible}
         transparent
         animationType="fade"
         onRequestClose={() => setSortModalVisible(false)}>
-        <Pressable
-          style={styles.modalOverlay}
-          onPress={() => setSortModalVisible(false)}>
+        <View style={styles.modalOverlay}>
+          <Pressable style={styles.modalBackdrop} onPress={() => setSortModalVisible(false)} />
           <View
             style={[
-              styles.modalContent,
-              { backgroundColor: theme.card, borderColor: theme.borderStrong },
+              styles.modalCard,
+              { backgroundColor: theme.card, borderColor: theme.border },
+              Shadows.card,
             ]}>
             <View style={styles.modalHeader}>
               <ThemedText style={styles.modalTitle}>Sort & Filter</ThemedText>
-              <Pressable onPress={() => setSortModalVisible(false)}>
-                <Ionicons name="close" size={20} color={theme.text} />
+              <Pressable
+                onPress={() => setSortModalVisible(false)}
+                hitSlop={8}>
+                <Ionicons name="close" size={20} color={theme.textSecondary} />
               </Pressable>
             </View>
 
-            <ThemedText style={[styles.sectionTitle, { color: theme.textMuted }]}>
-              Sort Feed By
+            <ThemedText style={[styles.modalSectionLabel, { color: theme.textSecondary }]}>
+              SORT ORDER
             </ThemedText>
-            {(['newest', 'oldest', 'updated'] as ItemSortOption[]).map((option) => (
+            {(['newest', 'oldest', 'updated'] as ItemSortOption[]).map((option) => {
+              const isSelected = filters.sortBy === option;
+              return (
+                <Pressable
+                  key={option}
+                  onPress={() => {
+                    setFilters((prev) => ({ ...prev, sortBy: option }));
+                    setSortModalVisible(false);
+                  }}
+                  style={[
+                    styles.sortOption,
+                    {
+                      backgroundColor: isSelected ? theme.primaryLight : 'transparent',
+                    },
+                  ]}>
+                  <ThemedText
+                    style={[
+                      styles.sortOptionLabel,
+                      {
+                        color: isSelected ? theme.primary : theme.text,
+                        fontWeight: isSelected ? '700' : '500',
+                      },
+                    ]}>
+                    {sortLabels[option]}
+                  </ThemedText>
+                  {isSelected && (
+                    <Ionicons name="checkmark" size={18} color={theme.primary} />
+                  )}
+                </Pressable>
+              );
+            })}
+
+            <ThemedText
+              style={[
+                styles.modalSectionLabel,
+                { color: theme.textSecondary, marginTop: Spacing.four },
+              ]}>
+              STATUS FILTER
+            </ThemedText>
+            <View style={styles.statusOptionRow}>
               <Pressable
-                key={option}
                 onPress={() => {
-                  setFilters((prev) => ({ ...prev, sortBy: option }));
+                  setFilters((prev) => ({ ...prev, status: 'active' }));
                   setSortModalVisible(false);
                 }}
                 style={[
-                  styles.sortOption,
+                  styles.statusOptionBtn,
                   {
                     backgroundColor:
-                      filters.sortBy === option ? theme.primaryLight : 'transparent',
+                      filters.status === 'active' ? theme.primary : theme.background,
+                    borderColor:
+                      filters.status === 'active' ? theme.primary : theme.border,
                   },
                 ]}>
                 <ThemedText
-                  style={[
-                    styles.sortOptionText,
-                    {
-                      color:
-                        filters.sortBy === option ? theme.primary : theme.text,
-                      fontWeight: filters.sortBy === option ? '700' : '500',
-                    },
-                  ]}>
-                  {sortLabels[option]}
+                  style={{
+                    color: filters.status === 'active' ? '#FFFFFF' : theme.text,
+                    fontWeight: '600',
+                    fontSize: 13,
+                  }}>
+                  Active Notices
                 </ThemedText>
-                {filters.sortBy === option && (
-                  <Ionicons name="checkmark" size={16} color={theme.primary} />
-                )}
               </Pressable>
-            ))}
 
-            <View style={styles.modalFooter}>
+              <Pressable
+                onPress={() => {
+                  setFilters((prev) => ({ ...prev, status: 'resolved' }));
+                  setSortModalVisible(false);
+                }}
+                style={[
+                  styles.statusOptionBtn,
+                  {
+                    backgroundColor:
+                      filters.status === 'resolved' ? theme.resolved : theme.background,
+                    borderColor:
+                      filters.status === 'resolved' ? theme.resolved : theme.border,
+                  },
+                ]}>
+                <ThemedText
+                  style={{
+                    color: filters.status === 'resolved' ? '#FFFFFF' : theme.text,
+                    fontWeight: '600',
+                    fontSize: 13,
+                  }}>
+                  Resolved Archive
+                </ThemedText>
+              </Pressable>
+            </View>
+
+            {hasActiveFilters && (
               <PrimaryButton
-                title="Clear All Filters"
-                variant="outline"
+                title="Reset All Filters"
+                variant="secondary"
                 size="sm"
                 onPress={() => {
                   resetFilters();
                   setSortModalVisible(false);
                 }}
+                style={{ marginTop: Spacing.four }}
               />
-            </View>
+            )}
           </View>
-        </Pressable>
+        </View>
       </Modal>
     </SafeAreaView>
   );
@@ -340,7 +381,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingHorizontal: Spacing.four,
+    paddingHorizontal: ScreenPadding,
     paddingTop: Spacing.two,
     paddingBottom: Spacing.two,
   },
@@ -353,88 +394,80 @@ const styles = StyleSheet.create({
     letterSpacing: -0.4,
   },
   headerSubtitle: {
-    fontSize: 12,
-    fontWeight: '500',
+    fontSize: 13,
     marginTop: 1,
   },
   searchSection: {
-    paddingHorizontal: Spacing.four,
-    paddingVertical: 6,
+    paddingHorizontal: ScreenPadding,
+    marginTop: Spacing.two,
+    marginBottom: Spacing.two,
   },
   filterRow: {
     flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: Spacing.four,
-    paddingVertical: 4,
-  },
-  resolutionToggle: {
-    paddingHorizontal: 8,
-    paddingVertical: 6,
-    borderRadius: BorderRadius.xs,
-    borderWidth: 1,
-    marginLeft: 'auto',
-  },
-  resolutionToggleText: {
-    fontSize: 11,
-    fontWeight: '600',
+    paddingHorizontal: ScreenPadding,
+    marginBottom: Spacing.two,
+    flexWrap: 'wrap',
+    gap: 6,
   },
   categorySection: {
-    paddingVertical: 4,
+    marginBottom: Spacing.two,
   },
-  activeFiltersBar: {
+  metaRow: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingHorizontal: Spacing.four,
-    paddingVertical: 4,
+    paddingHorizontal: ScreenPadding,
+    marginBottom: Spacing.two,
   },
-  filterCountText: {
+  resultsCount: {
     fontSize: 12,
     fontWeight: '500',
   },
-  clearBtn: {
+  sortButton: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 3,
   },
-  clearBtnText: {
+  sortText: {
     fontSize: 12,
     fontWeight: '600',
   },
   listContent: {
-    paddingHorizontal: Spacing.four,
-    paddingTop: Spacing.two,
-    paddingBottom: Spacing.six,
-    flexGrow: 1,
+    paddingHorizontal: ScreenPadding,
+    paddingBottom: 80,
   },
   modalOverlay: {
     flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.45)',
-    justifyContent: 'flex-end',
+    backgroundColor: 'rgba(18, 28, 34, 0.65)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: Spacing.four,
   },
-  modalContent: {
-    borderTopLeftRadius: BorderRadius.lg,
-    borderTopRightRadius: BorderRadius.lg,
-    padding: Spacing.five,
+  modalBackdrop: {
+    ...StyleSheet.absoluteFill,
+  },
+  modalCard: {
+    width: '100%',
+    maxWidth: 380,
+    borderRadius: BorderRadius.lg,
+    padding: Spacing.four,
     borderWidth: 1,
-    gap: 6,
   },
   modalHeader: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    marginBottom: Spacing.two,
+    marginBottom: Spacing.three,
   },
   modalTitle: {
     fontSize: 17,
     fontWeight: '700',
   },
-  sectionTitle: {
+  modalSectionLabel: {
     fontSize: 11,
     fontWeight: '700',
-    textTransform: 'uppercase',
     letterSpacing: 0.5,
-    marginTop: Spacing.one,
+    marginBottom: Spacing.two,
   },
   sortOption: {
     flexDirection: 'row',
@@ -442,12 +475,22 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     paddingVertical: 10,
     paddingHorizontal: 12,
-    borderRadius: BorderRadius.xs,
+    borderRadius: BorderRadius.sm,
+    marginBottom: 4,
   },
-  sortOptionText: {
+  sortOptionLabel: {
     fontSize: 14,
   },
-  modalFooter: {
-    marginTop: Spacing.three,
+  statusOptionRow: {
+    flexDirection: 'row',
+    gap: Spacing.two,
+  },
+  statusOptionBtn: {
+    flex: 1,
+    paddingVertical: 10,
+    borderRadius: BorderRadius.md,
+    borderWidth: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
 });

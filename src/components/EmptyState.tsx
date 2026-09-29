@@ -3,7 +3,7 @@ import { StyleSheet, View } from 'react-native';
 import { ThemedText } from './themed-text';
 import { PrimaryButton } from './PrimaryButton';
 import { useTheme } from '@/hooks/use-theme';
-import { Spacing } from '@/constants/theme';
+import { BorderRadius, Spacing } from '@/constants/theme';
 import { Ionicons } from '@expo/vector-icons';
 
 interface EmptyStateProps {
@@ -29,12 +29,13 @@ export function EmptyState({
     <View style={styles.container}>
       <View
         style={[
-          styles.iconCircle,
+          styles.iconContainer,
           {
-            backgroundColor: theme.primaryLight,
+            backgroundColor: theme.card,
+            borderColor: theme.border,
           },
         ]}>
-        <Ionicons name={icon} size={40} color={theme.primary} />
+        <Ionicons name={icon} size={32} color={theme.textSecondary} />
       </View>
       <ThemedText style={styles.title}>{title}</ThemedText>
       <ThemedText
@@ -47,6 +48,7 @@ export function EmptyState({
           onPress={onAction}
           icon={actionIcon}
           size="md"
+          variant="secondary"
           style={styles.actionButton}
         />
       )}
@@ -61,25 +63,26 @@ const styles = StyleSheet.create({
     paddingVertical: Spacing.six,
     paddingHorizontal: Spacing.five,
   },
-  iconCircle: {
-    width: 80,
-    height: 80,
-    borderRadius: 40,
+  iconContainer: {
+    width: 64,
+    height: 64,
+    borderRadius: BorderRadius.lg,
+    borderWidth: 1,
     alignItems: 'center',
     justifyContent: 'center',
-    marginBottom: Spacing.four,
+    marginBottom: Spacing.three,
   },
   title: {
-    fontSize: 18,
+    fontSize: 17,
     fontWeight: '700',
     textAlign: 'center',
-    marginBottom: Spacing.two,
+    marginBottom: Spacing.one,
   },
   description: {
     fontSize: 14,
     textAlign: 'center',
     lineHeight: 20,
-    maxWidth: 320,
+    maxWidth: 300,
     marginBottom: Spacing.four,
   },
   actionButton: {

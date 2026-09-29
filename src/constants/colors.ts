@@ -1,92 +1,101 @@
 export const AppColors = {
   light: {
     // Primary architectural campus brand
-    primary: '#1A2E3B', // Deep campus slate navy
-    primaryLight: '#E8EEF2',
-    primaryDark: '#0F1C25',
-    accent: '#D9822B', // Warm library ochre
-    accentLight: '#FEF4E8',
+    primary: '#183B4E', // Primary navy
+    primaryLight: '#EBF1F5',
+    primaryDark: '#0F2633',
+    teal: '#2A7F78', // Muted teal
+    accent: '#2A7F78',
+    accentLight: '#EBF5F4',
 
-    // Physical bulletin tag colors
-    lost: '#C84B31', // Campus flyer vermilion
-    lostBg: '#FDF0ED',
-    lostBorder: '#F4B8AC',
-    lostText: '#8E2813',
+    // Status colors
+    lost: '#B7791F', // Warm amber lost status
+    lostBg: '#FDF6EB',
+    lostBorder: '#F0D5A3',
+    lostText: '#8A560E',
 
-    found: '#2D7A58', // Campus ivy/sage green
-    foundBg: '#EEF7F2',
-    foundBorder: '#A6DBC0',
-    foundText: '#184D35',
+    found: '#2A7F78', // Muted teal found status
+    foundBg: '#EBF5F4',
+    foundBorder: '#B4DCD8',
+    foundText: '#1A5A55',
 
-    active: '#1A2E3B',
-    activeBg: '#E8EEF2',
-    activeBorder: '#BACCD8',
-    activeText: '#1A2E3B',
+    active: '#183B4E',
+    activeBg: '#EBF1F5',
+    activeBorder: '#CBD8E0',
+    activeText: '#183B4E',
 
-    resolved: '#5A6B7C', // Archive slate
-    resolvedBg: '#F1F4F7',
-    resolvedBorder: '#CBD5E1',
-    resolvedText: '#334155',
+    resolved: '#477A58', // Returned/resolved status green
+    resolvedBg: '#EDF6F0',
+    resolvedBorder: '#BFDEC9',
+    resolvedText: '#2B5539',
+
+    inactive: '#737B80', // Inactive status
 
     // Surface & Paper structure
-    background: '#F6F7F9', // Crisp paper background
+    background: '#F6F4EF', // Warm ivory background
     card: '#FFFFFF',
     surface: '#FFFFFF',
-    border: '#E2E6EB',
-    borderStrong: '#CBD2DB',
-    text: '#111827', // High legibility ink
-    textSecondary: '#4B5563',
-    textMuted: '#6B7280',
-    inputBg: '#F9FAFB',
+    border: '#E5E3DD',
+    borderStrong: '#D1CFC7',
+    text: '#263238', // Main text
+    textSecondary: '#66747A', // Secondary text
+    textMuted: '#8C9BA1', // Muted / placeholder text
+    inputBg: '#FFFFFF',
 
     // Utility feedback
-    success: '#2D7A58',
-    warning: '#D9822B',
-    danger: '#C84B31',
+    success: '#477A58',
+    warning: '#B7791F',
+    danger: '#C53030',
+    dangerBg: '#FDF2F2',
   },
   dark: {
     // Primary architectural campus brand
-    primary: '#38BDF8', // Crisp sky contrast in dark
-    primaryLight: '#0C2A40',
-    primaryDark: '#0284C7',
-    accent: '#F59E0B',
-    accentLight: '#3D2806',
+    primary: '#8FC5C0', // Crisp primary accent in dark
+    primaryNavy: '#183B4E',
+    primaryLight: '#162C38',
+    primaryDark: '#6BAAA5',
+    teal: '#79BEB5',
+    accent: '#8FC5C0',
+    accentLight: '#1D3A3B',
 
-    // Physical bulletin tag colors
-    lost: '#F87171',
-    lostBg: '#2E1210',
-    lostBorder: '#5C1D18',
-    lostText: '#FECACA',
+    // Status colors
+    lost: '#E5B65F', // Warm amber in dark mode
+    lostBg: '#2E2412',
+    lostBorder: '#664E1C',
+    lostText: '#FBE4A8',
 
-    found: '#34D399',
-    foundBg: '#0B291D',
-    foundBorder: '#14533A',
-    foundText: '#A7F3D0',
+    found: '#79BEB5', // Muted teal in dark mode
+    foundBg: '#14282B',
+    foundBorder: '#235052',
+    foundText: '#C4ECE6',
 
-    active: '#38BDF8',
-    activeBg: '#0C2A40',
-    activeBorder: '#1E3A8A',
-    activeText: '#BAE6FD',
+    active: '#8FC5C0',
+    activeBg: '#162C38',
+    activeBorder: '#294B5C',
+    activeText: '#D6F2F0',
 
-    resolved: '#94A3B8',
-    resolvedBg: '#18202A',
-    resolvedBorder: '#334155',
-    resolvedText: '#CBD5E1',
+    resolved: '#62A87C', // Returned/resolved in dark mode
+    resolvedBg: '#16281E',
+    resolvedBorder: '#2A543B',
+    resolvedText: '#C1E6D0',
+
+    inactive: '#7D8E95', // Inactive status
 
     // Surface & Slate structure
-    background: '#0D141C', // Deep campus obsidian
-    card: '#141E28',
-    surface: '#1A2532',
-    border: '#223142',
-    borderStrong: '#2D3F54',
-    text: '#F3F4F6',
-    textSecondary: '#9CA3AF',
-    textMuted: '#6B7280',
-    inputBg: '#101822',
+    background: '#121C22', // Deep slate obsidian
+    card: '#1D2A32',
+    surface: '#24343E',
+    border: '#34434B',
+    borderStrong: '#455862',
+    text: '#F1F4F3', // Main text
+    textSecondary: '#B2BEC2', // Secondary text
+    textMuted: '#70828A', // Muted text
+    inputBg: '#17232B',
 
     // Utility feedback
-    success: '#34D399',
-    warning: '#F59E0B',
+    success: '#62A87C',
+    warning: '#E5B65F',
     danger: '#F87171',
+    dangerBg: '#2E1515',
   },
 };

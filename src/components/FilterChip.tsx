@@ -2,7 +2,7 @@ import React from 'react';
 import { Pressable, StyleSheet } from 'react-native';
 import { ThemedText } from './themed-text';
 import { useTheme } from '@/hooks/use-theme';
-import { BorderRadius } from '@/constants/theme';
+import { BorderRadius, Spacing } from '@/constants/theme';
 import { Ionicons } from '@expo/vector-icons';
 
 interface FilterChipProps {
@@ -38,23 +38,29 @@ export function FilterChip({
     return theme.primary;
   };
 
+  const getTextColor = () => {
+    if (selected) return '#FFFFFF';
+    return theme.text;
+  };
+
   return (
     <Pressable
       onPress={onPress}
       accessibilityRole="button"
       accessibilityState={{ selected }}
-      style={[
+      style={({ pressed }) => [
         styles.chip,
         {
           backgroundColor: getBackgroundColor(),
           borderColor: getBorderColor(),
+          opacity: pressed ? 0.88 : 1,
         },
       ]}>
       {icon && (
         <Ionicons
           name={icon}
-          size={13}
-          color={selected ? '#FFFFFF' : theme.textSecondary}
+          size={14}
+          color={getTextColor()}
           style={styles.icon}
         />
       )}
@@ -62,8 +68,8 @@ export function FilterChip({
         style={[
           styles.label,
           {
-            color: selected ? '#FFFFFF' : theme.text,
-            fontWeight: selected ? '700' : '600',
+            color: getTextColor(),
+            fontWeight: selected ? '700' : '500',
           },
         ]}>
         {label}
@@ -73,7 +79,7 @@ export function FilterChip({
           style={[
             styles.count,
             {
-              color: selected ? 'rgba(255, 255, 255, 0.85)' : theme.textMuted,
+              color: selected ? 'rgba(255, 255, 255, 0.9)' : theme.textSecondary,
               fontWeight: selected ? '700' : '500',
             },
           ]}>
@@ -88,20 +94,21 @@ const styles = StyleSheet.create({
   chip: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 10,
-    paddingVertical: 6,
-    borderRadius: BorderRadius.xs,
+    paddingHorizontal: 12,
+    paddingVertical: 7,
+    borderRadius: BorderRadius.full,
     borderWidth: 1,
-    marginRight: 6,
+    marginRight: Spacing.two,
+    minHeight: 34,
   },
   icon: {
     marginRight: 4,
   },
   label: {
-    fontSize: 12,
+    fontSize: 13,
   },
   count: {
-    fontSize: 11,
+    fontSize: 12,
     marginLeft: 3,
   },
 });

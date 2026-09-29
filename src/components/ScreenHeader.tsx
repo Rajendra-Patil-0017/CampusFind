@@ -53,8 +53,8 @@ export function ScreenHeader({
             style={({ pressed }) => [
               styles.backButton,
               {
-                backgroundColor: pressed ? theme.border : theme.inputBg,
-                borderColor: theme.border,
+                backgroundColor: pressed ? theme.border : theme.card,
+                borderColor: theme.borderStrong,
               },
             ]}>
             <Ionicons name="arrow-back" size={20} color={theme.text} />
@@ -123,9 +123,9 @@ const styles = StyleSheet.create({
     gap: Spacing.three,
   },
   backButton: {
-    width: 40,
-    height: 40,
-    borderRadius: BorderRadius.lg,
+    width: 44,
+    height: 44,
+    borderRadius: BorderRadius.md,
     borderWidth: 1,
     alignItems: 'center',
     justifyContent: 'center',
@@ -139,7 +139,7 @@ const styles = StyleSheet.create({
     letterSpacing: -0.3,
   },
   subtitle: {
-    fontSize: 12,
+    fontSize: 13,
     marginTop: 2,
   },
   rightButton: {
@@ -148,6 +148,9 @@ const styles = StyleSheet.create({
     paddingHorizontal: Spacing.two,
     paddingVertical: Spacing.one,
     borderRadius: BorderRadius.md,
+    minHeight: 44,
+    minWidth: 44,
+    justifyContent: 'center',
     gap: 4,
   },
   rightLabel: {

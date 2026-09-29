@@ -28,6 +28,7 @@ export const Fonts = Platform.select({
 });
 
 export const Spacing = {
+  zero: 0,
   half: 2,
   one: 4,
   two: 8,
@@ -39,61 +40,77 @@ export const Spacing = {
 } as const;
 
 export const BorderRadius = {
-  xs: 3,
-  sm: 6,
+  xs: 4,
+  sm: 8,
   md: 10,
   lg: 14,
-  xl: 18,
+  xl: 16,
   full: 9999,
 } as const;
 
 export const Shadows = {
-  tag: Platform.select({
+  subtle: Platform.select({
     ios: {
-      shadowColor: '#1A2E3B',
-      shadowOffset: { width: 0, height: 1.5 },
+      shadowColor: '#183B4E',
+      shadowOffset: { width: 0, height: 1 },
       shadowOpacity: 0.05,
+      shadowRadius: 2,
+    },
+    android: {
+      elevation: 1,
+    },
+    web: {
+      boxShadow: '0 1px 2px rgba(24, 59, 78, 0.04)',
+    },
+    default: {},
+  }),
+  card: Platform.select({
+    ios: {
+      shadowColor: '#183B4E',
+      shadowOffset: { width: 0, height: 2 },
+      shadowOpacity: 0.06,
+      shadowRadius: 4,
+    },
+    android: {
+      elevation: 2,
+    },
+    web: {
+      boxShadow: '0 2px 4px rgba(24, 59, 78, 0.06)',
+    },
+    default: {},
+  }),
+  button: Platform.select({
+    ios: {
+      shadowColor: '#183B4E',
+      shadowOffset: { width: 0, height: 2 },
+      shadowOpacity: 0.12,
       shadowRadius: 3,
     },
     android: {
       elevation: 2,
     },
     web: {
-      boxShadow: '0 1px 3px rgba(26, 46, 59, 0.06), 0 1px 2px rgba(26, 46, 59, 0.04)',
+      boxShadow: '0 2px 4px rgba(24, 59, 78, 0.12)',
     },
     default: {},
   }),
-  card: Platform.select({
+  tag: Platform.select({
     ios: {
-      shadowColor: '#1A2E3B',
-      shadowOffset: { width: 0, height: 2 },
-      shadowOpacity: 0.07,
-      shadowRadius: 5,
+      shadowColor: '#183B4E',
+      shadowOffset: { width: 0, height: 1 },
+      shadowOpacity: 0.04,
+      shadowRadius: 2,
     },
     android: {
-      elevation: 3,
+      elevation: 1,
     },
     web: {
-      boxShadow: '0 2px 6px rgba(26, 46, 59, 0.07), 0 1px 2px rgba(26, 46, 59, 0.04)',
-    },
-    default: {},
-  }),
-  button: Platform.select({
-    ios: {
-      shadowColor: '#1A2E3B',
-      shadowOffset: { width: 0, height: 2 },
-      shadowOpacity: 0.15,
-      shadowRadius: 4,
-    },
-    android: {
-      elevation: 3,
-    },
-    web: {
-      boxShadow: '0 2px 6px rgba(26, 46, 59, 0.16)',
+      boxShadow: '0 1px 2px rgba(24, 59, 78, 0.04)',
     },
     default: {},
   }),
 };
 
+export const ScreenPadding = 20;
 export const BottomTabInset = Platform.select({ ios: 20, android: 16, web: 0 }) ?? 0;
 export const MaxContentWidth = 720;

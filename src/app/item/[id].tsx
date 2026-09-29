@@ -23,7 +23,7 @@ import { APP_CONFIG } from '@/constants/config';
 import { CATEGORY_DETAILS, Category } from '@/constants/categories';
 import { LostFoundItem } from '@/types/item';
 import { formatDisplayDate, formatRelativeTime } from '@/utils/formatters';
-import { BorderRadius, Shadows, Spacing } from '@/constants/theme';
+import { BorderRadius, ScreenPadding, Shadows, Spacing } from '@/constants/theme';
 import { Ionicons } from '@expo/vector-icons';
 
 export default function ItemDetailsScreen() {
@@ -104,7 +104,7 @@ export default function ItemDetailsScreen() {
   if (loading) {
     return (
       <SafeAreaView style={[styles.safeArea, { backgroundColor: theme.background }]}>
-        <ScreenHeader title="Record Details" showBack />
+        <ScreenHeader title="Item Notice" showBack />
         <LoadingState message="Loading campus report..." />
       </SafeAreaView>
     );
@@ -113,7 +113,7 @@ export default function ItemDetailsScreen() {
   if (!item) {
     return (
       <SafeAreaView style={[styles.safeArea, { backgroundColor: theme.background }]}>
-        <ScreenHeader title="Record Details" showBack />
+        <ScreenHeader title="Item Notice" showBack />
         <EmptyState
           icon="alert-circle-outline"
           title="Notice Not Found"
@@ -131,237 +131,208 @@ export default function ItemDetailsScreen() {
 
   const isResolved = item.status === 'resolved';
   const isLost = item.type === 'lost';
-  const tagColor = isResolved ? theme.resolved : isLost ? theme.lost : theme.found;
 
   return (
     <SafeAreaView
       style={[styles.safeArea, { backgroundColor: theme.background }]}
       edges={['top', 'left', 'right']}>
       <ScreenHeader
-        title={item.name}
-        subtitle={`Campus Notice #${item.id.slice(-6)}`}
+        title="Notice Details"
         showBack
         rightAction={{
-          icon: 'share-social-outline',
-          label: 'Share',
+          icon: 'share-outline',
           onPress: handleShare,
-          color: theme.primary,
+          label: 'Share',
         }}
       />
 
       <ScrollView
         showsVerticalScrollIndicator={false}
         contentContainerStyle={styles.scrollContent}>
-        {/* Physical Notice Banner / Image */}
+        {/* Photo Banner or Icon Placeholder */}
         {item.imageUri ? (
-          <View style={[styles.heroImageContainer, Shadows.tag, { borderColor: theme.borderStrong }]}>
+          <View style={[styles.imageContainer, Shadows.card]}>
             <Image
               source={{ uri: item.imageUri }}
-              style={styles.heroImage}
+              style={[styles.heroImage, { borderColor: theme.border }]}
               contentFit="cover"
+              transition={200}
             />
           </View>
         ) : (
           <View
             style={[
-              styles.heroBanner,
+              styles.heroPlaceholder,
               {
-                backgroundColor: isResolved
-                  ? theme.resolvedBg
-                  : isLost
-                  ? theme.lostBg
-                  : theme.foundBg,
-                borderColor: isResolved
-                  ? theme.resolvedBorder
-                  : isLost
-                  ? theme.lostBorder
-                  : theme.foundBorder,
+                backgroundColor: isLost ? theme.lostBg : theme.foundBg,
+                borderColor: isLost ? theme.lostBorder : theme.foundBorder,
               },
             ]}>
             <Ionicons
               name={categoryIcon}
-              size={44}
-              color={tagColor}
+              size={56}
+              color={isLost ? theme.lost : theme.found}
             />
             <ThemedText
               style={[
-                styles.bannerType,
-                { color: isResolved ? theme.resolvedText : isLost ? theme.lostText : theme.foundText },
+                styles.placeholderLabel,
+                { color: isLost ? theme.lostText : theme.foundText },
               ]}>
-              {isResolved
-                ? 'RESOLVED • ITEM RETURNED'
-                : isLost
-                ? 'CAMPUS LOST ITEM NOTICE'
-                : 'CAMPUS FOUND ITEM NOTICE'}
+              {item.category} Notice
             </ThemedText>
           </View>
         )}
 
-        {/* Status Badges */}
-        <View style={styles.badgeRow}>
-          <StatusBadge type={item.type} size="md" />
-          <StatusBadge status={item.status} size="md" />
-          <View
-            style={[
-              styles.categoryPill,
-              { backgroundColor: theme.card, borderColor: theme.borderStrong },
-            ]}>
-            <Ionicons name={categoryIcon} size={13} color={theme.textSecondary} />
-            <ThemedText style={[styles.categoryPillText, { color: theme.textSecondary }]}>
-              {item.category}
-            </ThemedText>
+        {/* Header Block: Title & Badges */}
+        <View style={styles.headerBlock}>
+          <View style={styles.badgeRow}>
+            <StatusBadge type={item.type} size="md" />
+            <StatusBadge status={item.status} size="md" />
+            <View
+              style={[
+                styles.categoryChip,
+                { backgroundColor: theme.card, borderColor: theme.border },
+              ]}>
+              <Ionicons name={categoryIcon} size={13} color={theme.textSecondary} />
+              <ThemedText style={[styles.categoryText, { color: theme.textSecondary }]}>
+                {item.category}
+              </ThemedText>
+            </View>
           </View>
+
+          <ThemedText style={styles.title}>{item.name}</ThemedText>
+
+          <ThemedText style={[styles.postedTime, { color: theme.textMuted }]}>
+            Posted {formatRelativeTime(item.createdAt)} • Incident Date:{' '}
+            {formatDisplayDate(item.date)}
+          </ThemedText>
         </View>
 
-        {/* Main Document Details Card */}
+        {/* Location & Details Card */}
         <View
           style={[
-            styles.docCard,
-            { backgroundColor: theme.card, borderColor: theme.borderStrong },
-            Shadows.tag,
+            styles.card,
+            { backgroundColor: theme.card, borderColor: theme.border },
+            Shadows.subtle,
           ]}>
-          <ThemedText style={styles.itemName}>{item.name}</ThemedText>
-
-          <View style={styles.metaGrid}>
-            <View style={styles.metaBox}>
-              <Ionicons name="location-sharp" size={15} color={theme.accent} />
-              <View style={styles.metaTextGroup}>
-                <ThemedText style={[styles.metaLabel, { color: theme.textMuted }]}>
-                  Location
-                </ThemedText>
-                <ThemedText style={styles.metaValue}>{item.location}</ThemedText>
-              </View>
-            </View>
-
-            <View style={styles.metaBox}>
-              <Ionicons name="calendar-sharp" size={15} color={theme.primary} />
-              <View style={styles.metaTextGroup}>
-                <ThemedText style={[styles.metaLabel, { color: theme.textMuted }]}>
-                  Date
-                </ThemedText>
-                <ThemedText style={styles.metaValue}>
-                  {formatDisplayDate(item.date)}
-                </ThemedText>
-              </View>
+          <View style={styles.metaItem}>
+            <Ionicons name="location" size={18} color={theme.teal} style={styles.metaIcon} />
+            <View style={styles.metaCol}>
+              <ThemedText style={[styles.metaLabel, { color: theme.textSecondary }]}>
+                Campus Location
+              </ThemedText>
+              <ThemedText style={styles.metaValue}>{item.location}</ThemedText>
             </View>
           </View>
 
           <View style={[styles.divider, { backgroundColor: theme.border }]} />
 
-          <ThemedText style={styles.sectionHeading}>Description</ThemedText>
-          <ThemedText style={[styles.descriptionText, { color: theme.text }]}>
-            {item.description}
-          </ThemedText>
-
-          <View style={styles.timestampRow}>
-            <Ionicons name="time-outline" size={13} color={theme.textMuted} />
-            <ThemedText style={[styles.timestampText, { color: theme.textMuted }]}>
-              Logged {formatRelativeTime(item.createdAt)}
-              {item.createdAt !== item.updatedAt
-                ? ` (Updated ${formatRelativeTime(item.updatedAt)})`
-                : ''}
-            </ThemedText>
+          <View style={styles.metaItem}>
+            <Ionicons name="calendar-outline" size={18} color={theme.teal} style={styles.metaIcon} />
+            <View style={styles.metaCol}>
+              <ThemedText style={[styles.metaLabel, { color: theme.textSecondary }]}>
+                Reported Date
+              </ThemedText>
+              <ThemedText style={styles.metaValue}>{formatDisplayDate(item.date)}</ThemedText>
+            </View>
           </View>
         </View>
 
-        {/* Actions Section */}
-        {isOwner ? (
-          <View
-            style={[
-              styles.ownerPanel,
-              { backgroundColor: theme.card, borderColor: theme.borderStrong },
-              Shadows.tag,
-            ]}>
-            <View style={styles.ownerHeader}>
-              <Ionicons name="shield-checkmark" size={20} color={theme.primary} />
-              <ThemedText style={styles.ownerTitle}>Your Post Controls</ThemedText>
+        {/* Description Card */}
+        <View
+          style={[
+            styles.card,
+            { backgroundColor: theme.card, borderColor: theme.border },
+            Shadows.subtle,
+          ]}>
+          <ThemedText style={[styles.sectionTitle, { color: theme.text }]}>
+            Description & Notes
+          </ThemedText>
+          <ThemedText style={[styles.descriptionText, { color: theme.text }]}>
+            {item.description}
+          </ThemedText>
+        </View>
+
+        {/* Contact Information Box */}
+        <View
+          style={[
+            styles.card,
+            { backgroundColor: theme.card, borderColor: theme.border },
+            Shadows.subtle,
+          ]}>
+          <ThemedText style={[styles.sectionTitle, { color: theme.text }]}>
+            Contact / Reported By
+          </ThemedText>
+
+          <View style={styles.contactRow}>
+            <View style={[styles.avatarCircle, { backgroundColor: theme.primaryLight }]}>
+              <Ionicons name="person" size={20} color={theme.primary} />
             </View>
-
-            <View style={styles.ownerButtonsRow}>
-              <PrimaryButton
-                title="Edit Details"
-                icon="pencil"
-                variant="secondary"
-                size="md"
-                onPress={() => router.push(`/item/edit/${item.id}` as any)}
-                style={styles.ownerBtn}
-              />
-
-              <PrimaryButton
-                title={item.status === 'active' ? 'Mark Resolved' : 'Reactivate'}
-                icon={
-                  item.status === 'active'
-                    ? 'checkmark-done-circle'
-                    : 'refresh-circle'
-                }
-                variant={item.status === 'active' ? 'primary' : 'outline'}
-                size="md"
-                onPress={() => setResolveModalVisible(true)}
-                style={styles.ownerBtn}
-              />
+            <View style={styles.contactDetails}>
+              <ThemedText style={styles.contactName}>{item.contactName}</ThemedText>
+              <ThemedText style={[styles.contactInfo, { color: theme.textSecondary }]}>
+                {item.contactInfo}
+              </ThemedText>
             </View>
+          </View>
+        </View>
 
+        {/* Actions Area */}
+        <View style={styles.actionsSection}>
+          {/* Primary Contact Button */}
+          {!isOwner && (
             <PrimaryButton
-              title="Delete Record"
-              icon="trash-outline"
-              variant="danger"
-              size="sm"
-              onPress={() => setDeleteModalVisible(true)}
+              title={
+                item.contactInfo.includes('@')
+                  ? `Email ${item.contactName}`
+                  : `Call / Message ${item.contactName}`
+              }
+              icon={item.contactInfo.includes('@') ? 'mail' : 'call'}
+              size="lg"
+              onPress={handleContactPress}
+              style={styles.primaryActionButton}
             />
-          </View>
-        ) : (
-          <View
-            style={[
-              styles.contactPanel,
-              { backgroundColor: theme.card, borderColor: theme.borderStrong },
-              Shadows.tag,
-            ]}>
-            <ThemedText style={styles.sectionHeading}>Contact Reporter</ThemedText>
-            <ThemedText style={[styles.contactHelp, { color: theme.textSecondary }]}>
-              Connect directly to confirm ownership and coordinate handover
-            </ThemedText>
+          )}
 
-            <View style={styles.contactRow}>
-              <View style={[styles.avatarBox, { backgroundColor: theme.primaryLight }]}>
-                <Ionicons name="person" size={18} color={theme.primary} />
-              </View>
-              <View style={styles.contactTextContainer}>
-                <ThemedText style={styles.contactName}>{item.contactName}</ThemedText>
-                <ThemedText style={[styles.contactDetail, { color: theme.textSecondary }]}>
-                  {item.contactInfo}
-                </ThemedText>
+          {/* Owner Actions */}
+          {isOwner && (
+            <View style={styles.ownerActionsBlock}>
+              <PrimaryButton
+                title={isResolved ? 'Re-open Notice as Active' : 'Mark as Resolved / Returned'}
+                icon={isResolved ? 'refresh-outline' : 'checkmark-circle-outline'}
+                variant={isResolved ? 'secondary' : 'primary'}
+                size="lg"
+                onPress={() => setResolveModalVisible(true)}
+              />
+
+              <View style={styles.secondaryOwnerRow}>
+                <PrimaryButton
+                  title="Edit Notice"
+                  icon="create-outline"
+                  variant="secondary"
+                  size="md"
+                  onPress={() => router.push(`/item/edit/${item.id}` as any)}
+                  style={styles.flexBtn}
+                />
+                <PrimaryButton
+                  title="Delete"
+                  icon="trash-outline"
+                  variant="danger"
+                  size="md"
+                  onPress={() => setDeleteModalVisible(true)}
+                  style={styles.flexBtn}
+                />
               </View>
             </View>
-
-            <View style={styles.contactButtonsRow}>
-              <PrimaryButton
-                title={
-                  item.contactInfo.includes('@') ? 'Email Reporter' : 'Call / Text'
-                }
-                icon={
-                  item.contactInfo.includes('@') ? 'mail-outline' : 'call-outline'
-                }
-                onPress={handleContactPress}
-                size="md"
-                style={styles.contactActionBtn}
-              />
-              <PrimaryButton
-                title="Share Notice"
-                icon="share-social-outline"
-                variant="secondary"
-                onPress={handleShare}
-                size="md"
-              />
-            </View>
-          </View>
-        )}
+          )}
+        </View>
       </ScrollView>
 
-      {/* Delete Confirmation Dialog */}
+      {/* Delete Confirmation Modal */}
       <ConfirmDialog
         visible={deleteModalVisible}
-        title="Delete this notice?"
-        message="This action will permanently delete this record from CampusFind."
+        title="Delete Notice?"
+        message="Are you sure you want to remove this notice from the campus bulletin? This action cannot be easily undone."
         confirmText="Delete"
         cancelText="Cancel"
         isDestructive
@@ -370,20 +341,16 @@ export default function ItemDetailsScreen() {
         onCancel={() => setDeleteModalVisible(false)}
       />
 
-      {/* Resolve Confirmation Dialog */}
+      {/* Resolve Confirmation Modal */}
       <ConfirmDialog
         visible={resolveModalVisible}
-        title={
-          item.status === 'active'
-            ? 'Mark Notice as Resolved?'
-            : 'Reopen Notice as Active?'
-        }
+        title={isResolved ? 'Re-open Notice?' : 'Mark as Resolved?'}
         message={
-          item.status === 'active'
-            ? 'This flags the item as successfully returned or recovered.'
-            : 'This returns the notice back to the active campus bulletin feed.'
+          isResolved
+            ? 'This notice will become active again and appear in main campus searches.'
+            : 'Marking this item as resolved indicates it has been successfully returned to its rightful owner.'
         }
-        confirmText={item.status === 'active' ? 'Mark Resolved' : 'Reactivate'}
+        confirmText={isResolved ? 'Re-open' : 'Mark Resolved'}
         cancelText="Cancel"
         icon="checkmark-circle-outline"
         onConfirm={handleToggleResolved}
@@ -398,42 +365,47 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   scrollContent: {
-    paddingHorizontal: Spacing.four,
-    paddingTop: Spacing.two,
-    paddingBottom: Spacing.seven,
+    paddingHorizontal: ScreenPadding,
+    paddingBottom: 60,
   },
-  heroImageContainer: {
-    borderRadius: BorderRadius.sm,
+  imageContainer: {
+    marginTop: Spacing.two,
+    marginBottom: Spacing.four,
+    borderRadius: BorderRadius.lg,
     overflow: 'hidden',
-    marginBottom: Spacing.three,
-    borderWidth: 1,
   },
   heroImage: {
     width: '100%',
-    height: 200,
+    height: 220,
+    borderRadius: BorderRadius.lg,
+    borderWidth: 1,
   },
-  heroBanner: {
-    height: 110,
-    borderRadius: BorderRadius.sm,
+  heroPlaceholder: {
+    width: '100%',
+    height: 140,
+    borderRadius: BorderRadius.lg,
     borderWidth: 1,
     alignItems: 'center',
     justifyContent: 'center',
-    marginBottom: Spacing.three,
-    gap: 6,
+    marginTop: Spacing.two,
+    marginBottom: Spacing.four,
+    gap: 8,
   },
-  bannerType: {
-    fontSize: 11,
-    fontWeight: '800',
-    letterSpacing: 0.8,
+  placeholderLabel: {
+    fontSize: 13,
+    fontWeight: '600',
+  },
+  headerBlock: {
+    marginBottom: Spacing.four,
   },
   badgeRow: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 6,
-    marginBottom: Spacing.three,
+    marginBottom: Spacing.two,
     flexWrap: 'wrap',
   },
-  categoryPill: {
+  categoryChip: {
     flexDirection: 'row',
     alignItems: 'center',
     paddingHorizontal: 8,
@@ -442,130 +414,100 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     gap: 4,
   },
-  categoryPillText: {
+  categoryText: {
     fontSize: 11,
-    fontWeight: '600',
+    fontWeight: '500',
   },
-  docCard: {
-    padding: Spacing.four,
-    borderRadius: BorderRadius.sm,
+  title: {
+    fontSize: 22,
+    fontWeight: '800',
+    letterSpacing: -0.4,
+    lineHeight: 28,
+    marginBottom: 6,
+  },
+  postedTime: {
+    fontSize: 12,
+    fontWeight: '500',
+  },
+  card: {
+    borderRadius: BorderRadius.lg,
     borderWidth: 1,
+    padding: Spacing.four,
     marginBottom: Spacing.three,
   },
-  itemName: {
-    fontSize: 20,
-    fontWeight: '800',
-    marginBottom: Spacing.two,
-    letterSpacing: -0.3,
-  },
-  metaGrid: {
-    flexDirection: 'row',
-    gap: Spacing.three,
-    marginVertical: 4,
-  },
-  metaBox: {
-    flex: 1,
+  metaItem: {
     flexDirection: 'row',
     alignItems: 'flex-start',
-    gap: 6,
   },
-  metaTextGroup: {
+  metaIcon: {
+    marginTop: 2,
+    marginRight: Spacing.three,
+  },
+  metaCol: {
     flex: 1,
   },
   metaLabel: {
-    fontSize: 10,
-    fontWeight: '700',
+    fontSize: 11,
+    fontWeight: '600',
+    letterSpacing: 0.3,
+    marginBottom: 2,
     textTransform: 'uppercase',
   },
   metaValue: {
-    fontSize: 13,
+    fontSize: 15,
     fontWeight: '600',
-    marginTop: 1,
   },
   divider: {
     height: 1,
     marginVertical: Spacing.three,
   },
-  sectionHeading: {
+  sectionTitle: {
     fontSize: 14,
     fontWeight: '700',
-    marginBottom: 4,
+    marginBottom: Spacing.two,
   },
   descriptionText: {
     fontSize: 14,
-    lineHeight: 20,
-  },
-  timestampRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 4,
-    marginTop: Spacing.three,
-  },
-  timestampText: {
-    fontSize: 11,
-  },
-  ownerPanel: {
-    padding: Spacing.four,
-    borderRadius: BorderRadius.sm,
-    borderWidth: 1,
-    gap: Spacing.two,
-    marginBottom: Spacing.three,
-  },
-  ownerHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
-  },
-  ownerTitle: {
-    fontSize: 14,
-    fontWeight: '700',
-  },
-  ownerButtonsRow: {
-    flexDirection: 'row',
-    gap: 8,
-  },
-  ownerBtn: {
-    flex: 1,
-  },
-  contactPanel: {
-    padding: Spacing.four,
-    borderRadius: BorderRadius.sm,
-    borderWidth: 1,
-    marginBottom: Spacing.three,
-  },
-  contactHelp: {
-    fontSize: 12,
-    marginBottom: Spacing.three,
+    lineHeight: 22,
   },
   contactRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: Spacing.two,
-    marginBottom: Spacing.three,
   },
-  avatarBox: {
-    width: 36,
-    height: 36,
-    borderRadius: BorderRadius.xs,
+  avatarCircle: {
+    width: 44,
+    height: 44,
+    borderRadius: BorderRadius.full,
     alignItems: 'center',
     justifyContent: 'center',
+    marginRight: Spacing.three,
   },
-  contactTextContainer: {
+  contactDetails: {
     flex: 1,
   },
   contactName: {
     fontSize: 15,
     fontWeight: '700',
   },
-  contactDetail: {
-    fontSize: 12,
-    marginTop: 1,
+  contactInfo: {
+    fontSize: 13,
+    marginTop: 2,
   },
-  contactButtonsRow: {
+  actionsSection: {
+    marginTop: Spacing.three,
+  },
+  primaryActionButton: {
+    marginBottom: Spacing.three,
+  },
+  ownerActionsBlock: {
+    gap: Spacing.two,
+  },
+  secondaryOwnerRow: {
     flexDirection: 'row',
-    gap: 8,
+    gap: Spacing.two,
+    marginTop: 4,
   },
-  contactActionBtn: {
+  flexBtn: {
     flex: 1,
   },
 });

@@ -26,7 +26,7 @@ export function Snackbar({
   actionText,
   onAction,
   onDismiss,
-  duration = 4000,
+  duration = 4500,
   type = 'default',
 }: SnackbarProps) {
   const theme = useTheme();
@@ -37,12 +37,12 @@ export function Snackbar({
     Animated.parallel([
       Animated.timing(opacity, {
         toValue: 0,
-        duration: 180,
+        duration: 160,
         useNativeDriver: true,
       }),
       Animated.timing(translateY, {
         toValue: 40,
-        duration: 180,
+        duration: 160,
         useNativeDriver: true,
       }),
     ]).start(() => {
@@ -55,12 +55,12 @@ export function Snackbar({
       Animated.parallel([
         Animated.timing(opacity, {
           toValue: 1,
-          duration: 220,
+          duration: 200,
           useNativeDriver: true,
         }),
         Animated.timing(translateY, {
           toValue: 0,
-          duration: 220,
+          duration: 200,
           useNativeDriver: true,
         }),
       ]).start();
@@ -97,7 +97,7 @@ export function Snackbar({
           Shadows.card,
         ]}>
         {type === 'success' && (
-          <Ionicons name="checkmark-circle" size={18} color="#34D399" style={styles.icon} />
+          <Ionicons name="checkmark-circle" size={18} color="#79BEB5" style={styles.icon} />
         )}
         {type === 'error' && (
           <Ionicons name="alert-circle" size={18} color="#F87171" style={styles.icon} />
@@ -113,8 +113,11 @@ export function Snackbar({
               onAction();
               handleDismiss();
             }}
+            hitSlop={8}
             style={styles.actionBtn}>
-            <ThemedText style={styles.actionText}>{actionText}</ThemedText>
+            <ThemedText style={[styles.actionText, { color: theme.accent }]}>
+              {actionText}
+            </ThemedText>
           </Pressable>
         )}
       </View>
@@ -125,7 +128,7 @@ export function Snackbar({
 const styles = StyleSheet.create({
   container: {
     position: 'absolute',
-    bottom: 90,
+    bottom: 84,
     left: Spacing.four,
     right: Spacing.four,
     alignItems: 'center',
@@ -136,7 +139,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingVertical: 12,
     paddingHorizontal: 16,
-    borderRadius: BorderRadius.lg,
+    borderRadius: BorderRadius.md,
+    borderWidth: 1,
     maxWidth: 500,
     width: '100%',
   },
@@ -151,12 +155,12 @@ const styles = StyleSheet.create({
   actionBtn: {
     marginLeft: Spacing.three,
     paddingVertical: 4,
-    paddingHorizontal: 8,
+    paddingHorizontal: 6,
   },
   actionText: {
-    color: '#38BDF8',
     fontWeight: '700',
-    fontSize: 14,
+    fontSize: 13,
+    letterSpacing: 0.2,
     textTransform: 'uppercase',
   },
 });

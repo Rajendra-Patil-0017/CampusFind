@@ -20,7 +20,7 @@ import { LoadingState } from '@/components/LoadingState';
 import { useTheme } from '@/hooks/use-theme';
 import { StorageService } from '@/services/storage';
 import { ItemFormData, validateItemForm, ValidationErrors } from '@/utils/validation';
-import { BorderRadius, Spacing } from '@/constants/theme';
+import { BorderRadius, ScreenPadding, Spacing } from '@/constants/theme';
 import { Ionicons } from '@expo/vector-icons';
 
 export default function EditPostScreen() {
@@ -88,7 +88,7 @@ export default function EditPostScreen() {
         mediaTypes: ['images'],
         allowsEditing: true,
         aspect: [4, 3],
-        quality: 0.6,
+        quality: 0.7,
       });
 
       if (!result.canceled && result.assets && result.assets[0]?.uri) {
@@ -138,7 +138,7 @@ export default function EditPostScreen() {
       router.back();
     } catch (e) {
       console.warn('Failed to update post:', e);
-      alert('Failed to update post.');
+      alert('Failed to update post. Please try again.');
     } finally {
       setIsSubmitting(false);
     }
@@ -159,7 +159,7 @@ export default function EditPostScreen() {
     <SafeAreaView
       style={[styles.safeArea, { backgroundColor: theme.background }]}
       edges={['top', 'left', 'right']}>
-      <ScreenHeader title="Edit Campus Notice" showBack />
+      <ScreenHeader title="Edit Notice" showBack />
 
       <KeyboardAvoidingView
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}
@@ -168,287 +168,307 @@ export default function EditPostScreen() {
           showsVerticalScrollIndicator={false}
           contentContainerStyle={styles.scrollContent}
           keyboardShouldPersistTaps="handled">
-          {/* Post Type Selector */}
+          {/* Section 1: Type Selection */}
           <View style={styles.section}>
-            <ThemedText style={styles.label}>Notice Category *</ThemedText>
-            <View style={styles.typeSelector}>
+            <ThemedText style={[styles.sectionLabel, { color: theme.textSecondary }]}>
+              1. NOTICE TYPE
+            </ThemedText>
+            <View style={styles.typeSelectorRow}>
               <Pressable
-                onPress={() => handleFieldChange('type', 'lost')}
+                onPress={() => setFormData((prev) => ({ ...prev, type: 'lost' }))}
                 style={[
                   styles.typeButton,
                   {
                     backgroundColor: isLost ? theme.lostBg : theme.card,
-                    borderColor: isLost ? theme.lost : theme.borderStrong,
+                    borderColor: isLost ? theme.lost : theme.border,
                   },
                 ]}>
-                <View
-                  style={[
-                    styles.typeDot,
-                    { backgroundColor: isLost ? theme.lost : theme.textMuted },
-                  ]}
+                <Ionicons
+                  name="alert-circle"
+                  size={18}
+                  color={isLost ? theme.lost : theme.textSecondary}
                 />
                 <ThemedText
                   style={[
-                    styles.typeText,
-                    {
-                      color: isLost ? theme.lostText : theme.text,
-                      fontWeight: isLost ? '800' : '600',
-                    },
+                    styles.typeTitle,
+                    { color: isLost ? theme.lostText : theme.text },
                   ]}>
-                  LOST ITEM
+                  Lost Item
                 </ThemedText>
               </Pressable>
 
               <Pressable
-                onPress={() => handleFieldChange('type', 'found')}
+                onPress={() => setFormData((prev) => ({ ...prev, type: 'found' }))}
                 style={[
                   styles.typeButton,
                   {
                     backgroundColor: !isLost ? theme.foundBg : theme.card,
-                    borderColor: !isLost ? theme.found : theme.borderStrong,
+                    borderColor: !isLost ? theme.found : theme.border,
                   },
                 ]}>
-                <View
-                  style={[
-                    styles.typeDot,
-                    { backgroundColor: !isLost ? theme.found : theme.textMuted },
-                  ]}
+                <Ionicons
+                  name="checkmark-circle"
+                  size={18}
+                  color={!isLost ? theme.found : theme.textSecondary}
                 />
                 <ThemedText
                   style={[
-                    styles.typeText,
-                    {
-                      color: !isLost ? theme.foundText : theme.text,
-                      fontWeight: !isLost ? '800' : '600',
-                    },
+                    styles.typeTitle,
+                    { color: !isLost ? theme.foundText : theme.text },
                   ]}>
-                  FOUND ITEM
+                  Found Item
                 </ThemedText>
               </Pressable>
             </View>
           </View>
 
-          {/* Item Name */}
+          {/* Section 2: Item Information */}
           <View style={styles.section}>
-            <ThemedText style={styles.label}>Item Title *</ThemedText>
-            <TextInput
-              value={formData.name}
-              onChangeText={(t) => handleFieldChange('name', t)}
-              placeholder="Item title"
-              placeholderTextColor={theme.textMuted}
-              style={[
-                styles.input,
-                {
-                  backgroundColor: theme.card,
-                  borderColor: errors.name ? theme.danger : theme.borderStrong,
-                  color: theme.text,
-                },
-              ]}
-            />
-            {errors.name && (
-              <ThemedText style={[styles.errorText, { color: theme.danger }]}>
-                {errors.name}
-              </ThemedText>
-            )}
-          </View>
+            <ThemedText style={[styles.sectionLabel, { color: theme.textSecondary }]}>
+              2. ITEM INFORMATION
+            </ThemedText>
 
-          {/* Category Picker */}
-          <View style={styles.section}>
-            <ThemedText style={styles.label}>Classification *</ThemedText>
-            <CategoryPicker
-              selectedCategory={formData.category}
-              onSelectCategory={(cat) => handleFieldChange('category', cat)}
-            />
-            {errors.category && (
-              <ThemedText style={[styles.errorText, { color: theme.danger }]}>
-                {errors.category}
+            {/* Name */}
+            <View style={styles.fieldGroup}>
+              <ThemedText style={styles.fieldLabel}>
+                Item Name <ThemedText style={{ color: theme.danger }}>*</ThemedText>
               </ThemedText>
-            )}
-          </View>
-
-          {/* Location */}
-          <View style={styles.section}>
-            <ThemedText style={styles.label}>Campus Location *</ThemedText>
-            <View style={styles.inputWithIcon}>
-              <Ionicons
-                name="location-sharp"
-                size={16}
-                color={theme.accent}
-                style={styles.fieldIcon}
+              <TextInput
+                value={formData.name}
+                onChangeText={(text) => handleFieldChange('name', text)}
+                placeholder="Item name"
+                placeholderTextColor={theme.textMuted}
+                style={[
+                  styles.input,
+                  {
+                    backgroundColor: theme.card,
+                    borderColor: errors.name ? theme.danger : theme.borderStrong,
+                    color: theme.text,
+                  },
+                ]}
+                maxLength={80}
               />
+              {errors.name && (
+                <ThemedText style={[styles.errorText, { color: theme.danger }]}>
+                  {errors.name}
+                </ThemedText>
+              )}
+            </View>
+
+            {/* Category */}
+            <View style={styles.fieldGroup}>
+              <ThemedText style={styles.fieldLabel}>
+                Category <ThemedText style={{ color: theme.danger }}>*</ThemedText>
+              </ThemedText>
+              <CategoryPicker
+                selectedCategory={formData.category}
+                onSelectCategory={(cat) => handleFieldChange('category', cat)}
+              />
+              {errors.category && (
+                <ThemedText style={[styles.errorText, { color: theme.danger }]}>
+                  {errors.category}
+                </ThemedText>
+              )}
+            </View>
+
+            {/* Description */}
+            <View style={styles.fieldGroup}>
+              <ThemedText style={styles.fieldLabel}>
+                Description <ThemedText style={{ color: theme.danger }}>*</ThemedText>
+              </ThemedText>
+              <TextInput
+                value={formData.description}
+                onChangeText={(text) => handleFieldChange('description', text)}
+                placeholder="Detailed description..."
+                placeholderTextColor={theme.textMuted}
+                multiline
+                numberOfLines={4}
+                textAlignVertical="top"
+                style={[
+                  styles.textArea,
+                  {
+                    backgroundColor: theme.card,
+                    borderColor: errors.description ? theme.danger : theme.borderStrong,
+                    color: theme.text,
+                  },
+                ]}
+                maxLength={1000}
+              />
+              {errors.description && (
+                <ThemedText style={[styles.errorText, { color: theme.danger }]}>
+                  {errors.description}
+                </ThemedText>
+              )}
+            </View>
+          </View>
+
+          {/* Section 3: Location and Date */}
+          <View style={styles.section}>
+            <ThemedText style={[styles.sectionLabel, { color: theme.textSecondary }]}>
+              3. LOCATION & DATE
+            </ThemedText>
+
+            <View style={styles.fieldGroup}>
+              <ThemedText style={styles.fieldLabel}>
+                Campus Location <ThemedText style={{ color: theme.danger }}>*</ThemedText>
+              </ThemedText>
               <TextInput
                 value={formData.location}
-                onChangeText={(t) => handleFieldChange('location', t)}
+                onChangeText={(text) => handleFieldChange('location', text)}
                 placeholder="Location"
                 placeholderTextColor={theme.textMuted}
                 style={[
                   styles.input,
-                  styles.flexInput,
                   {
                     backgroundColor: theme.card,
                     borderColor: errors.location ? theme.danger : theme.borderStrong,
                     color: theme.text,
                   },
                 ]}
+                maxLength={100}
               />
+              {errors.location && (
+                <ThemedText style={[styles.errorText, { color: theme.danger }]}>
+                  {errors.location}
+                </ThemedText>
+              )}
             </View>
-            {errors.location && (
-              <ThemedText style={[styles.errorText, { color: theme.danger }]}>
-                {errors.location}
-              </ThemedText>
-            )}
-          </View>
 
-          {/* Date */}
-          <View style={styles.section}>
-            <ThemedText style={styles.label}>Date *</ThemedText>
-            <View style={styles.inputWithIcon}>
-              <Ionicons
-                name="calendar-sharp"
-                size={16}
-                color={theme.textMuted}
-                style={styles.fieldIcon}
-              />
+            <View style={styles.fieldGroup}>
+              <ThemedText style={styles.fieldLabel}>
+                Date (YYYY-MM-DD) <ThemedText style={{ color: theme.danger }}>*</ThemedText>
+              </ThemedText>
               <TextInput
                 value={formData.date}
-                onChangeText={(t) => handleFieldChange('date', t)}
+                onChangeText={(text) => handleFieldChange('date', text)}
                 placeholder="YYYY-MM-DD"
                 placeholderTextColor={theme.textMuted}
                 style={[
                   styles.input,
-                  styles.flexInput,
                   {
                     backgroundColor: theme.card,
                     borderColor: errors.date ? theme.danger : theme.borderStrong,
                     color: theme.text,
                   },
                 ]}
+                maxLength={10}
               />
+              {errors.date && (
+                <ThemedText style={[styles.errorText, { color: theme.danger }]}>
+                  {errors.date}
+                </ThemedText>
+              )}
             </View>
-            {errors.date && (
-              <ThemedText style={[styles.errorText, { color: theme.danger }]}>
-                {errors.date}
-              </ThemedText>
-            )}
           </View>
 
-          {/* Description */}
+          {/* Section 4: Photo */}
           <View style={styles.section}>
-            <ThemedText style={styles.label}>Description *</ThemedText>
-            <TextInput
-              value={formData.description}
-              onChangeText={(t) => handleFieldChange('description', t)}
-              placeholder="Description"
-              placeholderTextColor={theme.textMuted}
-              multiline
-              numberOfLines={4}
-              textAlignVertical="top"
-              style={[
-                styles.textArea,
-                {
-                  backgroundColor: theme.card,
-                  borderColor: errors.description ? theme.danger : theme.borderStrong,
-                  color: theme.text,
-                },
-              ]}
-            />
-            {errors.description && (
-              <ThemedText style={[styles.errorText, { color: theme.danger }]}>
-                {errors.description}
-              </ThemedText>
-            )}
-          </View>
+            <ThemedText style={[styles.sectionLabel, { color: theme.textSecondary }]}>
+              4. PHOTO
+            </ThemedText>
 
-          {/* Image */}
-          <View style={styles.section}>
-            <ThemedText style={styles.label}>Attached Photo</ThemedText>
             {formData.imageUri ? (
-              <View style={[styles.imagePreviewContainer, { borderColor: theme.borderStrong }]}>
+              <View style={styles.imagePreviewContainer}>
                 <Image
                   source={{ uri: formData.imageUri }}
-                  style={styles.imagePreview}
-                  resizeMode="cover"
+                  style={[styles.previewImage, { borderColor: theme.border }]}
                 />
-                <Pressable
-                  onPress={handleRemoveImage}
-                  style={styles.removeImageBtn}>
-                  <Ionicons name="trash-outline" size={14} color="#FFFFFF" />
-                  <ThemedText style={styles.removeImageText}>Remove</ThemedText>
-                </Pressable>
+                <View style={styles.imageActionRow}>
+                  <Pressable
+                    onPress={handlePickImage}
+                    style={[
+                      styles.imageActionBtn,
+                      { backgroundColor: theme.card, borderColor: theme.border },
+                    ]}>
+                    <Ionicons name="camera-outline" size={16} color={theme.text} />
+                    <ThemedText style={styles.imageActionText}>Change Photo</ThemedText>
+                  </Pressable>
+                  <Pressable
+                    onPress={handleRemoveImage}
+                    style={[
+                      styles.imageActionBtn,
+                      { backgroundColor: theme.dangerBg, borderColor: theme.danger },
+                    ]}>
+                    <Ionicons name="trash-outline" size={16} color={theme.danger} />
+                    <ThemedText style={[styles.imageActionText, { color: theme.danger }]}>
+                      Remove
+                    </ThemedText>
+                  </Pressable>
+                </View>
               </View>
             ) : (
               <Pressable
                 onPress={handlePickImage}
                 style={[
-                  styles.uploadBox,
+                  styles.photoUploadBox,
                   {
                     backgroundColor: theme.card,
                     borderColor: theme.borderStrong,
                   },
                 ]}>
-                <Ionicons name="camera-outline" size={24} color={theme.primary} />
-                <ThemedText style={[styles.uploadText, { color: theme.text }]}>
-                  Add photo
-                </ThemedText>
+                <Ionicons name="camera-outline" size={24} color={theme.textSecondary} />
+                <ThemedText style={styles.photoUploadTitle}>Add Photo</ThemedText>
               </Pressable>
             )}
           </View>
 
-          {/* Contact Details */}
-          <View style={[styles.sectionCard, { backgroundColor: theme.card, borderColor: theme.borderStrong }]}>
-            <ThemedText style={styles.sectionHeading}>Reporter Details</ThemedText>
+          {/* Section 5: Contact Info */}
+          <View style={styles.section}>
+            <ThemedText style={[styles.sectionLabel, { color: theme.textSecondary }]}>
+              5. CONTACT INFO
+            </ThemedText>
 
-            <View style={styles.fieldSpacer}>
-              <ThemedText style={styles.label}>Your Name *</ThemedText>
+            <View style={styles.fieldGroup}>
+              <ThemedText style={styles.fieldLabel}>
+                Your Name <ThemedText style={{ color: theme.danger }}>*</ThemedText>
+              </ThemedText>
               <TextInput
                 value={formData.contactName}
-                onChangeText={(t) => handleFieldChange('contactName', t)}
+                onChangeText={(text) => handleFieldChange('contactName', text)}
+                placeholder="Poster name"
+                placeholderTextColor={theme.textMuted}
                 style={[
                   styles.input,
                   {
-                    backgroundColor: theme.background,
-                    borderColor: errors.contactName ? theme.danger : theme.border,
+                    backgroundColor: theme.card,
+                    borderColor: errors.contactName ? theme.danger : theme.borderStrong,
                     color: theme.text,
                   },
                 ]}
+                maxLength={60}
               />
-              {errors.contactName && (
-                <ThemedText style={[styles.errorText, { color: theme.danger }]}>
-                  {errors.contactName}
-                </ThemedText>
-              )}
             </View>
 
-            <View style={styles.fieldSpacer}>
-              <ThemedText style={styles.label}>Contact Info *</ThemedText>
+            <View style={styles.fieldGroup}>
+              <ThemedText style={styles.fieldLabel}>
+                Email or Phone <ThemedText style={{ color: theme.danger }}>*</ThemedText>
+              </ThemedText>
               <TextInput
                 value={formData.contactInfo}
-                onChangeText={(t) => handleFieldChange('contactInfo', t)}
+                onChangeText={(text) => handleFieldChange('contactInfo', text)}
+                placeholder="Contact details"
+                placeholderTextColor={theme.textMuted}
+                autoCapitalize="none"
                 style={[
                   styles.input,
                   {
-                    backgroundColor: theme.background,
-                    borderColor: errors.contactInfo ? theme.danger : theme.border,
+                    backgroundColor: theme.card,
+                    borderColor: errors.contactInfo ? theme.danger : theme.borderStrong,
                     color: theme.text,
                   },
                 ]}
+                maxLength={80}
               />
-              {errors.contactInfo && (
-                <ThemedText style={[styles.errorText, { color: theme.danger }]}>
-                  {errors.contactInfo}
-                </ThemedText>
-              )}
             </View>
           </View>
 
           {/* Save Button */}
           <View style={styles.submitSection}>
             <PrimaryButton
-              title="Save Changes"
-              icon="save"
-              onPress={handleSubmit}
-              loading={isSubmitting}
+              title={isSubmitting ? 'Saving Changes...' : 'Save Changes'}
               size="lg"
+              loading={isSubmitting}
+              onPress={handleSubmit}
             />
           </View>
         </ScrollView>
@@ -465,128 +485,108 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   scrollContent: {
-    paddingHorizontal: Spacing.four,
-    paddingTop: Spacing.two,
-    paddingBottom: Spacing.seven,
+    paddingHorizontal: ScreenPadding,
+    paddingBottom: 60,
   },
   section: {
-    marginBottom: Spacing.three,
+    marginTop: Spacing.three,
   },
-  sectionCard: {
-    padding: Spacing.four,
-    borderRadius: BorderRadius.sm,
-    borderWidth: 1,
-    marginBottom: Spacing.four,
-  },
-  sectionHeading: {
-    fontSize: 15,
+  sectionLabel: {
+    fontSize: 11,
     fontWeight: '700',
+    letterSpacing: 0.6,
     marginBottom: Spacing.two,
   },
-  label: {
-    fontSize: 13,
-    fontWeight: '700',
-    marginBottom: 4,
-  },
-  typeSelector: {
+  typeSelectorRow: {
     flexDirection: 'row',
-    gap: 8,
+    gap: Spacing.two,
   },
   typeButton: {
     flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'center',
-    paddingVertical: 12,
-    borderRadius: BorderRadius.sm,
+    padding: Spacing.three,
+    borderRadius: BorderRadius.md,
     borderWidth: 1.5,
-    gap: 6,
+    gap: 8,
+    justifyContent: 'center',
   },
-  typeDot: {
-    width: 8,
-    height: 8,
-    borderRadius: 4,
+  typeTitle: {
+    fontSize: 14,
+    fontWeight: '700',
   },
-  typeText: {
+  fieldGroup: {
+    marginBottom: Spacing.three,
+  },
+  fieldLabel: {
     fontSize: 13,
-    letterSpacing: 0.3,
+    fontWeight: '600',
+    marginBottom: 6,
   },
   input: {
-    height: 44,
-    borderRadius: BorderRadius.xs,
+    height: 48,
+    borderRadius: BorderRadius.md,
     borderWidth: 1,
     paddingHorizontal: Spacing.three,
     fontSize: 14,
   },
-  inputWithIcon: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  fieldIcon: {
-    position: 'absolute',
-    left: Spacing.three,
-    zIndex: 1,
-  },
-  flexInput: {
-    flex: 1,
-    paddingLeft: Spacing.six,
-  },
   textArea: {
-    minHeight: 90,
-    borderRadius: BorderRadius.xs,
+    minHeight: 100,
+    borderRadius: BorderRadius.md,
     borderWidth: 1,
     padding: Spacing.three,
     fontSize: 14,
   },
   errorText: {
-    fontSize: 11,
+    fontSize: 12,
     marginTop: 4,
-    fontWeight: '600',
+    fontWeight: '500',
   },
-  uploadBox: {
-    height: 80,
-    borderRadius: BorderRadius.xs,
+  photoUploadBox: {
     borderWidth: 1,
     borderStyle: 'dashed',
+    borderRadius: BorderRadius.md,
+    padding: Spacing.four,
     alignItems: 'center',
     justifyContent: 'center',
-    gap: 3,
+    minHeight: 80,
   },
-  uploadText: {
+  photoUploadTitle: {
     fontSize: 13,
-    fontWeight: '700',
+    fontWeight: '600',
+    marginTop: 4,
   },
   imagePreviewContainer: {
-    borderRadius: BorderRadius.xs,
-    overflow: 'hidden',
-    position: 'relative',
+    alignItems: 'center',
+  },
+  previewImage: {
+    width: '100%',
+    height: 180,
+    borderRadius: BorderRadius.md,
     borderWidth: 1,
   },
-  imagePreview: {
+  imageActionRow: {
+    flexDirection: 'row',
+    gap: Spacing.two,
+    marginTop: Spacing.two,
     width: '100%',
-    height: 160,
   },
-  removeImageBtn: {
-    position: 'absolute',
-    top: 8,
-    right: 8,
-    backgroundColor: 'rgba(200, 75, 49, 0.95)',
+  imageActionBtn: {
+    flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
-    paddingVertical: 4,
-    paddingHorizontal: 8,
-    borderRadius: BorderRadius.xs,
-    gap: 4,
+    justifyContent: 'center',
+    height: 40,
+    borderRadius: BorderRadius.md,
+    borderWidth: 1,
+    gap: 6,
   },
-  removeImageText: {
-    color: '#FFFFFF',
-    fontSize: 11,
-    fontWeight: '700',
-  },
-  fieldSpacer: {
-    marginTop: Spacing.two,
+  imageActionText: {
+    fontSize: 13,
+    fontWeight: '600',
   },
   submitSection: {
-    marginTop: Spacing.two,
+    marginTop: Spacing.four,
+    marginBottom: Spacing.four,
   },
 });

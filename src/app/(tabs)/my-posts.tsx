@@ -18,7 +18,7 @@ import { useTheme } from '@/hooks/use-theme';
 import { StorageService } from '@/services/storage';
 import { APP_CONFIG } from '@/constants/config';
 import { ItemStatus, LostFoundItem } from '@/types/item';
-import { BorderRadius, Spacing } from '@/constants/theme';
+import { BorderRadius, ScreenPadding, Spacing } from '@/constants/theme';
 import { Ionicons } from '@expo/vector-icons';
 
 export default function MyPostsScreen() {
@@ -110,136 +110,74 @@ export default function MyPostsScreen() {
       edges={['top', 'left', 'right']}>
       {/* Screen Header */}
       <View style={styles.header}>
-        <ThemedText style={styles.headerTitle}>My Campus Reports</ThemedText>
+        <ThemedText style={styles.headerTitle}>My Reports</ThemedText>
         <ThemedText style={[styles.headerSubtitle, { color: theme.textSecondary }]}>
-          Manage active notices and resolution records
+          Manage your lost and found listings
         </ThemedText>
       </View>
 
-      {/* Segmented Tab Bar */}
-      <View
-        style={[
-          styles.segmentedContainer,
-          { backgroundColor: theme.card, borderColor: theme.borderStrong },
-        ]}>
-        <Pressable
-          onPress={() => setActiveTab('active')}
-          accessibilityRole="tab"
-          accessibilityState={{ selected: activeTab === 'active' }}
+      {/* Segmented Tab Selector */}
+      <View style={styles.tabContainer}>
+        <View
           style={[
-            styles.segmentButton,
-            {
-              backgroundColor:
-                activeTab === 'active' ? theme.primary : 'transparent',
-            },
+            styles.segmentedBar,
+            { backgroundColor: theme.card, borderColor: theme.border },
           ]}>
-          <ThemedText
+          <Pressable
+            onPress={() => setActiveTab('active')}
+            accessibilityRole="tab"
+            accessibilityState={{ selected: activeTab === 'active' }}
             style={[
-              styles.segmentText,
+              styles.segmentButton,
               {
-                color: activeTab === 'active' ? '#FFFFFF' : theme.textSecondary,
-                fontWeight: activeTab === 'active' ? '700' : '600',
+                backgroundColor:
+                  activeTab === 'active' ? theme.primary : 'transparent',
               },
             ]}>
-            Active Notices ({activeCount})
-          </ThemedText>
-        </Pressable>
+            <ThemedText
+              style={[
+                styles.segmentText,
+                {
+                  color: activeTab === 'active' ? '#FFFFFF' : theme.text,
+                  fontWeight: activeTab === 'active' ? '700' : '500',
+                },
+              ]}>
+              Active ({activeCount})
+            </ThemedText>
+          </Pressable>
 
-        <Pressable
-          onPress={() => setActiveTab('resolved')}
-          accessibilityRole="tab"
-          accessibilityState={{ selected: activeTab === 'resolved' }}
-          style={[
-            styles.segmentButton,
-            {
-              backgroundColor:
-                activeTab === 'resolved' ? theme.primary : 'transparent',
-            },
-          ]}>
-          <ThemedText
+          <Pressable
+            onPress={() => setActiveTab('resolved')}
+            accessibilityRole="tab"
+            accessibilityState={{ selected: activeTab === 'resolved' }}
             style={[
-              styles.segmentText,
+              styles.segmentButton,
               {
-                color:
-                  activeTab === 'resolved' ? '#FFFFFF' : theme.textSecondary,
-                fontWeight: activeTab === 'resolved' ? '700' : '600',
+                backgroundColor:
+                  activeTab === 'resolved' ? theme.resolved : 'transparent',
               },
             ]}>
-            Resolved Returns ({resolvedCount})
-          </ThemedText>
-        </Pressable>
+            <ThemedText
+              style={[
+                styles.segmentText,
+                {
+                  color: activeTab === 'resolved' ? '#FFFFFF' : theme.text,
+                  fontWeight: activeTab === 'resolved' ? '700' : '500',
+                },
+              ]}>
+              Resolved ({resolvedCount})
+            </ThemedText>
+          </Pressable>
+        </View>
       </View>
 
       {/* Posts List */}
       {loading ? (
-        <LoadingState message="Loading your campus posts..." />
+        <LoadingState message="Loading your reports..." />
       ) : (
         <FlatList
           data={filteredPosts}
           keyExtractor={(item) => item.id}
-          renderItem={({ item }) => (
-            <View style={styles.cardContainer}>
-              <ItemCard
-                item={item}
-                onPress={() => router.push(`/item/${item.id}` as any)}
-              />
-              {/* Quick Actions Bar */}
-              <View
-                style={[
-                  styles.quickActions,
-                  {
-                    backgroundColor: theme.card,
-                    borderColor: theme.borderStrong,
-                  },
-                ]}>
-                <Pressable
-                  onPress={() => router.push(`/item/edit/${item.id}` as any)}
-                  style={styles.actionBtn}>
-                  <Ionicons name="pencil" size={14} color={theme.primary} />
-                  <ThemedText style={[styles.actionBtnText, { color: theme.primary }]}>
-                    Edit
-                  </ThemedText>
-                </Pressable>
-
-                <View style={[styles.actionDivider, { backgroundColor: theme.border }]} />
-
-                <Pressable
-                  onPress={() => handleToggleResolved(item)}
-                  style={styles.actionBtn}>
-                  <Ionicons
-                    name={
-                      item.status === 'active'
-                        ? 'checkmark-done-circle'
-                        : 'refresh-circle'
-                    }
-                    size={16}
-                    color={item.status === 'active' ? theme.found : theme.primary}
-                  />
-                  <ThemedText
-                    style={[
-                      styles.actionBtnText,
-                      {
-                        color:
-                          item.status === 'active' ? theme.found : theme.primary,
-                      },
-                    ]}>
-                    {item.status === 'active' ? 'Mark Resolved' : 'Reactivate'}
-                  </ThemedText>
-                </Pressable>
-
-                <View style={[styles.actionDivider, { backgroundColor: theme.border }]} />
-
-                <Pressable
-                  onPress={() => setDeleteTarget(item)}
-                  style={styles.actionBtn}>
-                  <Ionicons name="trash-outline" size={14} color={theme.danger} />
-                  <ThemedText style={[styles.actionBtnText, { color: theme.danger }]}>
-                    Delete
-                  </ThemedText>
-                </Pressable>
-              </View>
-            </View>
-          )}
           contentContainerStyle={styles.listContent}
           showsVerticalScrollIndicator={false}
           refreshControl={
@@ -250,17 +188,79 @@ export default function MyPostsScreen() {
               colors={[theme.primary]}
             />
           }
+          renderItem={({ item }) => (
+            <View style={styles.postWrapper}>
+              <ItemCard
+                item={item}
+                onPress={(selected) => router.push(`/item/${selected.id}` as any)}
+              />
+
+              {/* Quick Action Bar under Card */}
+              <View
+                style={[
+                  styles.cardActions,
+                  { backgroundColor: theme.card, borderColor: theme.border },
+                ]}>
+                <Pressable
+                  onPress={() => handleToggleResolved(item)}
+                  style={styles.cardActionBtn}>
+                  <Ionicons
+                    name={
+                      item.status === 'active'
+                        ? 'checkmark-circle-outline'
+                        : 'refresh-outline'
+                    }
+                    size={16}
+                    color={item.status === 'active' ? theme.teal : theme.primary}
+                  />
+                  <ThemedText
+                    style={[
+                      styles.cardActionText,
+                      { color: item.status === 'active' ? theme.teal : theme.primary },
+                    ]}>
+                    {item.status === 'active' ? 'Mark Resolved' : 'Re-open'}
+                  </ThemedText>
+                </Pressable>
+
+                <View style={[styles.actionDivider, { backgroundColor: theme.border }]} />
+
+                <Pressable
+                  onPress={() => router.push(`/item/edit/${item.id}` as any)}
+                  style={styles.cardActionBtn}>
+                  <Ionicons name="create-outline" size={16} color={theme.text} />
+                  <ThemedText style={[styles.cardActionText, { color: theme.text }]}>
+                    Edit
+                  </ThemedText>
+                </Pressable>
+
+                <View style={[styles.actionDivider, { backgroundColor: theme.border }]} />
+
+                <Pressable
+                  onPress={() => setDeleteTarget(item)}
+                  style={styles.cardActionBtn}>
+                  <Ionicons name="trash-outline" size={16} color={theme.danger} />
+                  <ThemedText style={[styles.cardActionText, { color: theme.danger }]}>
+                    Delete
+                  </ThemedText>
+                </Pressable>
+              </View>
+            </View>
+          )}
           ListEmptyComponent={
             <EmptyState
-              icon={activeTab === 'active' ? 'file-tray-outline' : 'checkmark-done-circle-outline'}
-              title={activeTab === 'active' ? 'No Active Notices' : 'No Resolved Notices'}
+              icon={activeTab === 'active' ? 'document-text-outline' : 'archive-outline'}
+              title={
+                activeTab === 'active'
+                  ? 'No Active Listings'
+                  : 'No Resolved Listings'
+              }
               description={
                 activeTab === 'active'
-                  ? "You don't currently have any active items posted on the bulletin."
-                  : 'Items marked as resolved will remain archived here.'
+                  ? "You haven't reported any active lost or found items yet."
+                  : 'Items you mark as resolved will be archived here for your records.'
               }
               actionTitle={activeTab === 'active' ? 'Report an Item' : undefined}
-              actionIcon="add-circle"
+              actionIcon="add"
               onAction={() => router.push('/(tabs)/add')}
             />
           }
@@ -270,9 +270,9 @@ export default function MyPostsScreen() {
       {/* Delete Confirmation Modal */}
       <ConfirmDialog
         visible={!!deleteTarget}
-        title="Delete this notice?"
-        message="This will remove the notice from CampusFind. You'll have 4 seconds to undo."
-        confirmText="Delete Notice"
+        title="Delete Notice?"
+        message={`Are you sure you want to delete "${deleteTarget?.name}"? You will have 5 seconds to undo.`}
+        confirmText="Delete"
         cancelText="Cancel"
         isDestructive
         icon="trash-outline"
@@ -280,12 +280,13 @@ export default function MyPostsScreen() {
         onCancel={() => setDeleteTarget(null)}
       />
 
-      {/* Undo / Success Toast */}
+      {/* Animated Undo Toast */}
       <Snackbar
         visible={snackbarVisible}
         message={snackbarMessage}
-        actionText={deletedBackup ? 'UNDO' : undefined}
-        onAction={deletedBackup ? handleUndoDelete : undefined}
+        actionText="UNDO"
+        duration={APP_CONFIG.undoTimeoutMs}
+        onAction={handleUndoDelete}
         onDismiss={() => {
           setSnackbarVisible(false);
           setDeletedBackup(null);
@@ -300,7 +301,7 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   header: {
-    paddingHorizontal: Spacing.four,
+    paddingHorizontal: ScreenPadding,
     paddingTop: Spacing.two,
     paddingBottom: Spacing.two,
   },
@@ -310,62 +311,59 @@ const styles = StyleSheet.create({
     letterSpacing: -0.4,
   },
   headerSubtitle: {
-    fontSize: 12,
-    fontWeight: '500',
+    fontSize: 13,
     marginTop: 1,
   },
-  segmentedContainer: {
-    flexDirection: 'row',
-    marginHorizontal: Spacing.four,
+  tabContainer: {
+    paddingHorizontal: ScreenPadding,
     marginVertical: Spacing.two,
-    padding: 3,
-    borderRadius: BorderRadius.xs,
+  },
+  segmentedBar: {
+    flexDirection: 'row',
+    borderRadius: BorderRadius.md,
     borderWidth: 1,
+    padding: 3,
   },
   segmentButton: {
     flex: 1,
-    paddingVertical: 7,
+    paddingVertical: 9,
+    borderRadius: BorderRadius.sm,
     alignItems: 'center',
     justifyContent: 'center',
-    borderRadius: BorderRadius.xs,
   },
   segmentText: {
-    fontSize: 12,
+    fontSize: 13,
   },
   listContent: {
-    paddingHorizontal: Spacing.four,
-    paddingTop: Spacing.two,
-    paddingBottom: Spacing.six,
-    flexGrow: 1,
+    paddingHorizontal: ScreenPadding,
+    paddingTop: Spacing.one,
+    paddingBottom: 80,
   },
-  cardContainer: {
-    marginBottom: Spacing.three,
+  postWrapper: {
+    marginBottom: Spacing.four,
   },
-  quickActions: {
+  cardActions: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'space-around',
-    paddingVertical: 8,
-    marginTop: -Spacing.three + 2,
-    marginBottom: Spacing.two,
-    borderBottomLeftRadius: BorderRadius.sm,
-    borderBottomRightRadius: BorderRadius.sm,
+    borderRadius: BorderRadius.md,
     borderWidth: 1,
-    borderTopWidth: 0,
+    marginTop: -Spacing.two,
+    paddingVertical: 8,
   },
-  actionBtn: {
+  cardActionBtn: {
+    flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 4,
-    paddingHorizontal: Spacing.two,
-    paddingVertical: 4,
+    justifyContent: 'center',
+    gap: 5,
+    minHeight: 32,
   },
-  actionBtnText: {
+  cardActionText: {
     fontSize: 12,
-    fontWeight: '700',
+    fontWeight: '600',
   },
   actionDivider: {
     width: 1,
-    height: 14,
+    height: 18,
   },
 });

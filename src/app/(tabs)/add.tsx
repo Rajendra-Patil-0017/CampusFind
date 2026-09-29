@@ -18,8 +18,17 @@ import { CategoryPicker } from '@/components/CategoryPicker';
 import { useTheme } from '@/hooks/use-theme';
 import { StorageService } from '@/services/storage';
 import { ItemFormData, validateItemForm, ValidationErrors } from '@/utils/validation';
-import { BorderRadius, Spacing } from '@/constants/theme';
+import { BorderRadius, ScreenPadding, Spacing } from '@/constants/theme';
 import { Ionicons } from '@expo/vector-icons';
+
+const CAMPUS_LOCATION_SUGGESTIONS = [
+  'Central Library',
+  'Dining Hall / Cafeteria',
+  'Student Center',
+  'Engineering Hall',
+  'Gym & Sports Complex',
+  'Science Building',
+];
 
 export default function AddPostScreen() {
   const theme = useTheme();
@@ -38,7 +47,6 @@ export default function AddPostScreen() {
 
   const [errors, setErrors] = useState<ValidationErrors>({});
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
-  const [submitSuccess, setSubmitSuccess] = useState<boolean>(false);
 
   const handlePickImage = async () => {
     try {
@@ -54,7 +62,7 @@ export default function AddPostScreen() {
         mediaTypes: ['images'],
         allowsEditing: true,
         aspect: [4, 3],
-        quality: 0.6,
+        quality: 0.7,
       });
 
       if (!result.canceled && result.assets && result.assets[0]?.uri) {
@@ -100,8 +108,7 @@ export default function AddPostScreen() {
         imageUri: formData.imageUri,
       });
 
-      setSubmitSuccess(true);
-
+      // Reset form
       setFormData({
         type: 'lost',
         name: '',
@@ -114,10 +121,7 @@ export default function AddPostScreen() {
         imageUri: undefined,
       });
 
-      setTimeout(() => {
-        setSubmitSuccess(false);
-        router.replace(`/item/${created.id}` as any);
-      }, 550);
+      router.replace(`/item/${created.id}` as any);
     } catch (e) {
       console.warn('Failed to save post:', e);
       alert('Failed to save post. Please try again.');
@@ -135,11 +139,11 @@ export default function AddPostScreen() {
       <KeyboardAvoidingView
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}
         style={styles.keyboardAvoid}>
-        {/* Screen Header */}
+        {/* Header */}
         <View style={styles.header}>
-          <ThemedText style={styles.headerTitle}>Register Notice</ThemedText>
+          <ThemedText style={styles.headerTitle}>Report Item</ThemedText>
           <ThemedText style={[styles.headerSubtitle, { color: theme.textSecondary }]}>
-            Submit an official lost or found report to the campus registry
+            Submit a campus lost or found notice
           </ThemedText>
         </View>
 
@@ -147,272 +151,311 @@ export default function AddPostScreen() {
           showsVerticalScrollIndicator={false}
           contentContainerStyle={styles.scrollContent}
           keyboardShouldPersistTaps="handled">
-          {/* Intake Type Selector */}
+          {/* Step 1: Type Selection (Lost vs Found) */}
           <View style={styles.section}>
-            <ThemedText style={styles.label}>Report Category *</ThemedText>
-            <View style={styles.typeSelector}>
+            <ThemedText style={[styles.sectionLabel, { color: theme.textSecondary }]}>
+              1. NOTICE TYPE
+            </ThemedText>
+            <View style={styles.typeSelectorRow}>
               <Pressable
-                onPress={() => handleFieldChange('type', 'lost')}
-                accessibilityRole="button"
-                accessibilityState={{ selected: isLost }}
+                onPress={() => setFormData((prev) => ({ ...prev, type: 'lost' }))}
+                accessibilityRole="radio"
+                accessibilityState={{ checked: isLost }}
                 style={[
                   styles.typeButton,
                   {
                     backgroundColor: isLost ? theme.lostBg : theme.card,
-                    borderColor: isLost ? theme.lost : theme.borderStrong,
+                    borderColor: isLost ? theme.lost : theme.border,
                   },
                 ]}>
-                <View
-                  style={[
-                    styles.typeDot,
-                    { backgroundColor: isLost ? theme.lost : theme.textMuted },
-                  ]}
+                <Ionicons
+                  name="alert-circle"
+                  size={20}
+                  color={isLost ? theme.lost : theme.textSecondary}
                 />
-                <ThemedText
-                  style={[
-                    styles.typeText,
-                    {
-                      color: isLost ? theme.lostText : theme.text,
-                      fontWeight: isLost ? '800' : '600',
-                    },
-                  ]}>
-                  LOST ITEM
-                </ThemedText>
+                <View style={styles.typeTextCol}>
+                  <ThemedText
+                    style={[
+                      styles.typeTitle,
+                      { color: isLost ? theme.lostText : theme.text },
+                    ]}>
+                    I Lost Something
+                  </ThemedText>
+                  <ThemedText style={[styles.typeDesc, { color: theme.textSecondary }]}>
+                    Ask the campus community for help
+                  </ThemedText>
+                </View>
               </Pressable>
 
               <Pressable
-                onPress={() => handleFieldChange('type', 'found')}
-                accessibilityRole="button"
-                accessibilityState={{ selected: !isLost }}
+                onPress={() => setFormData((prev) => ({ ...prev, type: 'found' }))}
+                accessibilityRole="radio"
+                accessibilityState={{ checked: !isLost }}
                 style={[
                   styles.typeButton,
                   {
                     backgroundColor: !isLost ? theme.foundBg : theme.card,
-                    borderColor: !isLost ? theme.found : theme.borderStrong,
+                    borderColor: !isLost ? theme.found : theme.border,
                   },
                 ]}>
-                <View
-                  style={[
-                    styles.typeDot,
-                    { backgroundColor: !isLost ? theme.found : theme.textMuted },
-                  ]}
+                <Ionicons
+                  name="checkmark-circle"
+                  size={20}
+                  color={!isLost ? theme.found : theme.textSecondary}
                 />
-                <ThemedText
-                  style={[
-                    styles.typeText,
-                    {
-                      color: !isLost ? theme.foundText : theme.text,
-                      fontWeight: !isLost ? '800' : '600',
-                    },
-                  ]}>
-                  FOUND ITEM
-                </ThemedText>
+                <View style={styles.typeTextCol}>
+                  <ThemedText
+                    style={[
+                      styles.typeTitle,
+                      { color: !isLost ? theme.foundText : theme.text },
+                    ]}>
+                    I Found Something
+                  </ThemedText>
+                  <ThemedText style={[styles.typeDesc, { color: theme.textSecondary }]}>
+                    Help return an item to its owner
+                  </ThemedText>
+                </View>
               </Pressable>
             </View>
           </View>
 
-          {/* Item Name */}
+          {/* Step 2: Item Name & Category */}
           <View style={styles.section}>
-            <ThemedText style={styles.label}>Item Title *</ThemedText>
-            <TextInput
-              value={formData.name}
-              onChangeText={(t) => handleFieldChange('name', t)}
-              placeholder="e.g. Matte Black Leather Wallet, Student ID Card"
-              placeholderTextColor={theme.textMuted}
-              style={[
-                styles.input,
-                {
-                  backgroundColor: theme.card,
-                  borderColor: errors.name ? theme.danger : theme.borderStrong,
-                  color: theme.text,
-                },
-              ]}
-            />
-            {errors.name && (
-              <ThemedText style={[styles.errorText, { color: theme.danger }]}>
-                {errors.name}
-              </ThemedText>
-            )}
-          </View>
+            <ThemedText style={[styles.sectionLabel, { color: theme.textSecondary }]}>
+              2. ITEM INFORMATION
+            </ThemedText>
 
-          {/* Category Picker Grid */}
-          <View style={styles.section}>
-            <ThemedText style={styles.label}>Classification *</ThemedText>
-            <CategoryPicker
-              selectedCategory={formData.category}
-              onSelectCategory={(cat) => handleFieldChange('category', cat)}
-            />
-            {errors.category && (
-              <ThemedText style={[styles.errorText, { color: theme.danger }]}>
-                {errors.category}
+            {/* Item Name */}
+            <View style={styles.fieldGroup}>
+              <ThemedText style={styles.fieldLabel}>
+                Item Name <ThemedText style={{ color: theme.danger }}>*</ThemedText>
               </ThemedText>
-            )}
-          </View>
-
-          {/* Campus Location */}
-          <View style={styles.section}>
-            <ThemedText style={styles.label}>Campus Coordinates / Location *</ThemedText>
-            <View style={styles.inputWithIcon}>
-              <Ionicons
-                name="location-sharp"
-                size={16}
-                color={theme.accent}
-                style={styles.fieldIcon}
-              />
               <TextInput
-                value={formData.location}
-                onChangeText={(t) => handleFieldChange('location', t)}
-                placeholder="e.g. Library 2nd Floor study cubicles, Cafeteria Booth #4"
+                value={formData.name}
+                onChangeText={(text) => handleFieldChange('name', text)}
+                placeholder="e.g., Matte Black Leather Wallet, Silver MacBook Charger"
                 placeholderTextColor={theme.textMuted}
                 style={[
                   styles.input,
-                  styles.flexInput,
+                  {
+                    backgroundColor: theme.card,
+                    borderColor: errors.name ? theme.danger : theme.borderStrong,
+                    color: theme.text,
+                  },
+                ]}
+                maxLength={80}
+              />
+              {errors.name && (
+                <ThemedText style={[styles.errorText, { color: theme.danger }]}>
+                  {errors.name}
+                </ThemedText>
+              )}
+            </View>
+
+            {/* Category Selector */}
+            <View style={styles.fieldGroup}>
+              <ThemedText style={styles.fieldLabel}>
+                Category <ThemedText style={{ color: theme.danger }}>*</ThemedText>
+              </ThemedText>
+              <CategoryPicker
+                selectedCategory={formData.category}
+                onSelectCategory={(cat) => handleFieldChange('category', cat)}
+              />
+              {errors.category && (
+                <ThemedText style={[styles.errorText, { color: theme.danger }]}>
+                  {errors.category}
+                </ThemedText>
+              )}
+            </View>
+
+            {/* Detailed Description */}
+            <View style={styles.fieldGroup}>
+              <ThemedText style={styles.fieldLabel}>
+                Description <ThemedText style={{ color: theme.danger }}>*</ThemedText>
+              </ThemedText>
+              <TextInput
+                value={formData.description}
+                onChangeText={(text) => handleFieldChange('description', text)}
+                placeholder="Describe brand, color, stickers, unique scratches, contents, or handover details..."
+                placeholderTextColor={theme.textMuted}
+                multiline
+                numberOfLines={4}
+                textAlignVertical="top"
+                style={[
+                  styles.textArea,
+                  {
+                    backgroundColor: theme.card,
+                    borderColor: errors.description ? theme.danger : theme.borderStrong,
+                    color: theme.text,
+                  },
+                ]}
+                maxLength={1000}
+              />
+              {errors.description && (
+                <ThemedText style={[styles.errorText, { color: theme.danger }]}>
+                  {errors.description}
+                </ThemedText>
+              )}
+            </View>
+          </View>
+
+          {/* Step 3: Location and Date */}
+          <View style={styles.section}>
+            <ThemedText style={[styles.sectionLabel, { color: theme.textSecondary }]}>
+              3. LOCATION & DATE
+            </ThemedText>
+
+            {/* Location */}
+            <View style={styles.fieldGroup}>
+              <ThemedText style={styles.fieldLabel}>
+                Campus Location <ThemedText style={{ color: theme.danger }}>*</ThemedText>
+              </ThemedText>
+              <TextInput
+                value={formData.location}
+                onChangeText={(text) => handleFieldChange('location', text)}
+                placeholder="e.g., Central Library 2nd floor, Cafeteria Booth #4"
+                placeholderTextColor={theme.textMuted}
+                style={[
+                  styles.input,
                   {
                     backgroundColor: theme.card,
                     borderColor: errors.location ? theme.danger : theme.borderStrong,
                     color: theme.text,
                   },
                 ]}
+                maxLength={100}
               />
-            </View>
-            {errors.location && (
-              <ThemedText style={[styles.errorText, { color: theme.danger }]}>
-                {errors.location}
-              </ThemedText>
-            )}
-          </View>
-
-          {/* Incident Date */}
-          <View style={styles.section}>
-            <View style={styles.labelRow}>
-              <ThemedText style={styles.label}>Date *</ThemedText>
-              <Pressable
-                onPress={() =>
-                  handleFieldChange('date', new Date().toISOString().split('T')[0])
-                }>
-                <ThemedText style={[styles.todayLink, { color: theme.primary }]}>
-                  Set Today
+              {errors.location && (
+                <ThemedText style={[styles.errorText, { color: theme.danger }]}>
+                  {errors.location}
                 </ThemedText>
-              </Pressable>
+              )}
+
+              {/* Quick Location Chips */}
+              <View style={styles.suggestionChips}>
+                {CAMPUS_LOCATION_SUGGESTIONS.map((loc) => (
+                  <Pressable
+                    key={loc}
+                    onPress={() => handleFieldChange('location', loc)}
+                    style={[
+                      styles.suggestionPill,
+                      { backgroundColor: theme.card, borderColor: theme.border },
+                    ]}>
+                    <ThemedText style={[styles.suggestionText, { color: theme.textSecondary }]}>
+                      + {loc}
+                    </ThemedText>
+                  </Pressable>
+                ))}
+              </View>
             </View>
-            <View style={styles.inputWithIcon}>
-              <Ionicons
-                name="calendar-sharp"
-                size={16}
-                color={theme.textMuted}
-                style={styles.fieldIcon}
-              />
+
+            {/* Date */}
+            <View style={styles.fieldGroup}>
+              <ThemedText style={styles.fieldLabel}>
+                Date (YYYY-MM-DD) <ThemedText style={{ color: theme.danger }}>*</ThemedText>
+              </ThemedText>
               <TextInput
                 value={formData.date}
-                onChangeText={(t) => handleFieldChange('date', t)}
+                onChangeText={(text) => handleFieldChange('date', text)}
                 placeholder="YYYY-MM-DD"
                 placeholderTextColor={theme.textMuted}
                 style={[
                   styles.input,
-                  styles.flexInput,
                   {
                     backgroundColor: theme.card,
                     borderColor: errors.date ? theme.danger : theme.borderStrong,
                     color: theme.text,
                   },
                 ]}
+                maxLength={10}
               />
+              {errors.date && (
+                <ThemedText style={[styles.errorText, { color: theme.danger }]}>
+                  {errors.date}
+                </ThemedText>
+              )}
             </View>
-            {errors.date && (
-              <ThemedText style={[styles.errorText, { color: theme.danger }]}>
-                {errors.date}
-              </ThemedText>
-            )}
           </View>
 
-          {/* Description */}
+          {/* Step 4: Optional Photo Upload */}
           <View style={styles.section}>
-            <ThemedText style={styles.label}>Physical Description & Distinct Features *</ThemedText>
-            <TextInput
-              value={formData.description}
-              onChangeText={(t) => handleFieldChange('description', t)}
-              placeholder="Provide color, brand, stickers, scratches, case type, or specific contents..."
-              placeholderTextColor={theme.textMuted}
-              multiline
-              numberOfLines={4}
-              textAlignVertical="top"
-              style={[
-                styles.textArea,
-                {
-                  backgroundColor: theme.card,
-                  borderColor: errors.description ? theme.danger : theme.borderStrong,
-                  color: theme.text,
-                },
-              ]}
-            />
-            {errors.description && (
-              <ThemedText style={[styles.errorText, { color: theme.danger }]}>
-                {errors.description}
-              </ThemedText>
-            )}
-          </View>
+            <ThemedText style={[styles.sectionLabel, { color: theme.textSecondary }]}>
+              4. PHOTO (OPTIONAL)
+            </ThemedText>
 
-          {/* Photo Attachment */}
-          <View style={styles.section}>
-            <ThemedText style={styles.label}>Attached Photo (Optional)</ThemedText>
             {formData.imageUri ? (
-              <View style={[styles.imagePreviewContainer, { borderColor: theme.borderStrong }]}>
+              <View style={styles.imagePreviewContainer}>
                 <Image
                   source={{ uri: formData.imageUri }}
-                  style={styles.imagePreview}
-                  resizeMode="cover"
+                  style={[styles.previewImage, { borderColor: theme.border }]}
                 />
-                <Pressable
-                  onPress={handleRemoveImage}
-                  style={styles.removeImageBtn}
-                  accessibilityLabel="Remove photo">
-                  <Ionicons name="trash-outline" size={14} color="#FFFFFF" />
-                  <ThemedText style={styles.removeImageText}>Remove</ThemedText>
-                </Pressable>
+                <View style={styles.imageActionRow}>
+                  <Pressable
+                    onPress={handlePickImage}
+                    style={[
+                      styles.imageActionBtn,
+                      { backgroundColor: theme.card, borderColor: theme.border },
+                    ]}>
+                    <Ionicons name="camera-outline" size={16} color={theme.text} />
+                    <ThemedText style={styles.imageActionText}>Change Photo</ThemedText>
+                  </Pressable>
+                  <Pressable
+                    onPress={handleRemoveImage}
+                    style={[
+                      styles.imageActionBtn,
+                      { backgroundColor: theme.dangerBg, borderColor: theme.danger },
+                    ]}>
+                    <Ionicons name="trash-outline" size={16} color={theme.danger} />
+                    <ThemedText style={[styles.imageActionText, { color: theme.danger }]}>
+                      Remove
+                    </ThemedText>
+                  </Pressable>
+                </View>
               </View>
             ) : (
               <Pressable
                 onPress={handlePickImage}
                 style={[
-                  styles.uploadBox,
+                  styles.photoUploadBox,
                   {
                     backgroundColor: theme.card,
                     borderColor: theme.borderStrong,
                   },
                 ]}>
-                <Ionicons name="camera-outline" size={24} color={theme.primary} />
-                <ThemedText style={[styles.uploadText, { color: theme.text }]}>
-                  Attach an item photo
-                </ThemedText>
-                <ThemedText style={[styles.uploadSubtext, { color: theme.textMuted }]}>
-                  Improves recognition speed across the campus community
+                <Ionicons name="camera-outline" size={28} color={theme.textSecondary} />
+                <ThemedText style={styles.photoUploadTitle}>Attach Photo</ThemedText>
+                <ThemedText style={[styles.photoUploadSubtitle, { color: theme.textSecondary }]}>
+                  Photos help students verify items faster
                 </ThemedText>
               </Pressable>
             )}
           </View>
 
-          {/* Contact Details */}
-          <View style={[styles.sectionCard, { backgroundColor: theme.card, borderColor: theme.borderStrong }]}>
-            <ThemedText style={styles.sectionHeading}>Reporter Contact Info</ThemedText>
-            <ThemedText style={[styles.sectionSubtitle, { color: theme.textSecondary }]}>
-              Used by fellow campus members to coordinate return
+          {/* Step 5: Contact Information */}
+          <View style={styles.section}>
+            <ThemedText style={[styles.sectionLabel, { color: theme.textSecondary }]}>
+              5. CONTACT INFORMATION
             </ThemedText>
 
-            <View style={styles.fieldSpacer}>
-              <ThemedText style={styles.label}>Your Name *</ThemedText>
+            {/* Poster Name */}
+            <View style={styles.fieldGroup}>
+              <ThemedText style={styles.fieldLabel}>
+                Your Name <ThemedText style={{ color: theme.danger }}>*</ThemedText>
+              </ThemedText>
               <TextInput
                 value={formData.contactName}
-                onChangeText={(t) => handleFieldChange('contactName', t)}
-                placeholder="e.g. Jordan Miller"
+                onChangeText={(text) => handleFieldChange('contactName', text)}
+                placeholder="e.g., Alex Johnson or Student Services Desk"
                 placeholderTextColor={theme.textMuted}
                 style={[
                   styles.input,
                   {
-                    backgroundColor: theme.background,
-                    borderColor: errors.contactName ? theme.danger : theme.border,
+                    backgroundColor: theme.card,
+                    borderColor: errors.contactName ? theme.danger : theme.borderStrong,
                     color: theme.text,
                   },
                 ]}
+                maxLength={60}
               />
               {errors.contactName && (
                 <ThemedText style={[styles.errorText, { color: theme.danger }]}>
@@ -421,21 +464,27 @@ export default function AddPostScreen() {
               )}
             </View>
 
-            <View style={styles.fieldSpacer}>
-              <ThemedText style={styles.label}>Contact Detail (Email / Phone / Handle) *</ThemedText>
+            {/* Contact Details */}
+            <View style={styles.fieldGroup}>
+              <ThemedText style={styles.fieldLabel}>
+                Email or Phone <ThemedText style={{ color: theme.danger }}>*</ThemedText>
+              </ThemedText>
               <TextInput
                 value={formData.contactInfo}
-                onChangeText={(t) => handleFieldChange('contactInfo', t)}
-                placeholder="e.g. jmiller@campus.edu or (555) 234-5678"
+                onChangeText={(text) => handleFieldChange('contactInfo', text)}
+                placeholder="e.g., alex.j@campus.edu or +1 (555) 234-5678"
                 placeholderTextColor={theme.textMuted}
+                keyboardType="email-address"
+                autoCapitalize="none"
                 style={[
                   styles.input,
                   {
-                    backgroundColor: theme.background,
-                    borderColor: errors.contactInfo ? theme.danger : theme.border,
+                    backgroundColor: theme.card,
+                    borderColor: errors.contactInfo ? theme.danger : theme.borderStrong,
                     color: theme.text,
                   },
                 ]}
+                maxLength={80}
               />
               {errors.contactInfo && (
                 <ThemedText style={[styles.errorText, { color: theme.danger }]}>
@@ -443,22 +492,27 @@ export default function AddPostScreen() {
                 </ThemedText>
               )}
             </View>
+
+            {/* Privacy note */}
+            <View
+              style={[
+                styles.privacyNote,
+                { backgroundColor: theme.card, borderColor: theme.border },
+              ]}>
+              <Ionicons name="shield-checkmark-outline" size={16} color={theme.teal} />
+              <ThemedText style={[styles.privacyText, { color: theme.textSecondary }]}>
+                Your contact details are only visible on this notice to facilitate campus handoffs.
+              </ThemedText>
+            </View>
           </View>
 
-          {/* Submit Button */}
+          {/* Step 6: Submit Button */}
           <View style={styles.submitSection}>
             <PrimaryButton
-              title={
-                submitSuccess
-                  ? 'Notice Published!'
-                  : isLost
-                  ? 'Publish Lost Item Notice'
-                  : 'Publish Found Item Notice'
-              }
-              icon={submitSuccess ? 'checkmark-circle' : 'send'}
-              onPress={handleSubmit}
-              loading={isSubmitting}
+              title={isSubmitting ? 'Submitting...' : isLost ? 'Submit Lost Item Notice' : 'Submit Found Item Notice'}
               size="lg"
+              loading={isSubmitting}
+              onPress={handleSubmit}
             />
           </View>
         </ScrollView>
@@ -475,7 +529,7 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   header: {
-    paddingHorizontal: Spacing.four,
+    paddingHorizontal: ScreenPadding,
     paddingTop: Spacing.two,
     paddingBottom: Spacing.two,
   },
@@ -485,151 +539,151 @@ const styles = StyleSheet.create({
     letterSpacing: -0.4,
   },
   headerSubtitle: {
-    fontSize: 12,
-    fontWeight: '500',
-    marginTop: 2,
+    fontSize: 13,
+    marginTop: 1,
   },
   scrollContent: {
-    paddingHorizontal: Spacing.four,
-    paddingTop: Spacing.two,
-    paddingBottom: Spacing.seven,
+    paddingHorizontal: ScreenPadding,
+    paddingBottom: 90,
   },
   section: {
-    marginBottom: Spacing.three,
+    marginTop: Spacing.four,
   },
-  sectionCard: {
-    padding: Spacing.four,
+  sectionLabel: {
+    fontSize: 11,
+    fontWeight: '700',
+    letterSpacing: 0.6,
+    marginBottom: Spacing.two,
+  },
+  typeSelectorRow: {
+    flexDirection: 'column',
+    gap: Spacing.two,
+  },
+  typeButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: Spacing.three,
     borderRadius: BorderRadius.md,
-    borderWidth: 1,
-    marginBottom: Spacing.four,
+    borderWidth: 1.5,
+    gap: Spacing.three,
   },
-  sectionHeading: {
+  typeTextCol: {
+    flex: 1,
+  },
+  typeTitle: {
     fontSize: 15,
     fontWeight: '700',
   },
-  sectionSubtitle: {
+  typeDesc: {
     fontSize: 12,
-    marginTop: 2,
-    marginBottom: Spacing.two,
+    marginTop: 1,
   },
-  labelRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    marginBottom: 4,
+  fieldGroup: {
+    marginBottom: Spacing.three,
   },
-  label: {
+  fieldLabel: {
     fontSize: 13,
-    fontWeight: '700',
-    marginBottom: 4,
-    letterSpacing: -0.1,
-  },
-  todayLink: {
-    fontSize: 11,
-    fontWeight: '700',
-  },
-  typeSelector: {
-    flexDirection: 'row',
-    gap: 8,
-  },
-  typeButton: {
-    flex: 1,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingVertical: 12,
-    borderRadius: BorderRadius.sm,
-    borderWidth: 1.5,
-    gap: 6,
-  },
-  typeDot: {
-    width: 8,
-    height: 8,
-    borderRadius: 4,
-  },
-  typeText: {
-    fontSize: 13,
-    letterSpacing: 0.3,
+    fontWeight: '600',
+    marginBottom: 6,
   },
   input: {
-    height: 44,
-    borderRadius: BorderRadius.xs,
+    height: 48,
+    borderRadius: BorderRadius.md,
     borderWidth: 1,
     paddingHorizontal: Spacing.three,
     fontSize: 14,
   },
-  inputWithIcon: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  fieldIcon: {
-    position: 'absolute',
-    left: Spacing.three,
-    zIndex: 1,
-  },
-  flexInput: {
-    flex: 1,
-    paddingLeft: Spacing.six,
-  },
   textArea: {
-    minHeight: 90,
-    borderRadius: BorderRadius.xs,
+    minHeight: 100,
+    borderRadius: BorderRadius.md,
     borderWidth: 1,
     padding: Spacing.three,
     fontSize: 14,
   },
   errorText: {
-    fontSize: 11,
+    fontSize: 12,
     marginTop: 4,
-    fontWeight: '600',
+    fontWeight: '500',
   },
-  uploadBox: {
-    height: 100,
-    borderRadius: BorderRadius.xs,
+  suggestionChips: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 6,
+    marginTop: 8,
+  },
+  suggestionPill: {
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    borderRadius: BorderRadius.full,
+    borderWidth: 1,
+  },
+  suggestionText: {
+    fontSize: 11,
+    fontWeight: '500',
+  },
+  photoUploadBox: {
     borderWidth: 1,
     borderStyle: 'dashed',
+    borderRadius: BorderRadius.md,
+    padding: Spacing.four,
     alignItems: 'center',
     justifyContent: 'center',
-    gap: 3,
+    minHeight: 110,
   },
-  uploadText: {
-    fontSize: 13,
-    fontWeight: '700',
+  photoUploadTitle: {
+    fontSize: 14,
+    fontWeight: '600',
+    marginTop: 6,
   },
-  uploadSubtext: {
-    fontSize: 11,
+  photoUploadSubtitle: {
+    fontSize: 12,
+    marginTop: 2,
   },
   imagePreviewContainer: {
-    borderRadius: BorderRadius.xs,
-    overflow: 'hidden',
-    position: 'relative',
+    alignItems: 'center',
+  },
+  previewImage: {
+    width: '100%',
+    height: 180,
+    borderRadius: BorderRadius.md,
     borderWidth: 1,
   },
-  imagePreview: {
+  imageActionRow: {
+    flexDirection: 'row',
+    gap: Spacing.two,
+    marginTop: Spacing.two,
     width: '100%',
-    height: 160,
   },
-  removeImageBtn: {
-    position: 'absolute',
-    top: 8,
-    right: 8,
-    backgroundColor: 'rgba(200, 75, 49, 0.95)',
+  imageActionBtn: {
+    flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
-    paddingVertical: 4,
-    paddingHorizontal: 8,
-    borderRadius: BorderRadius.xs,
-    gap: 4,
+    justifyContent: 'center',
+    height: 40,
+    borderRadius: BorderRadius.md,
+    borderWidth: 1,
+    gap: 6,
   },
-  removeImageText: {
-    color: '#FFFFFF',
-    fontSize: 11,
-    fontWeight: '700',
+  imageActionText: {
+    fontSize: 13,
+    fontWeight: '600',
   },
-  fieldSpacer: {
-    marginTop: Spacing.two,
+  privacyNote: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: Spacing.three,
+    borderRadius: BorderRadius.md,
+    borderWidth: 1,
+    gap: Spacing.two,
+    marginTop: Spacing.one,
+  },
+  privacyText: {
+    flex: 1,
+    fontSize: 12,
+    lineHeight: 16,
   },
   submitSection: {
-    marginTop: Spacing.two,
+    marginTop: Spacing.five,
+    marginBottom: Spacing.four,
   },
 });

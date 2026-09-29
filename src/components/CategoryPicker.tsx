@@ -37,13 +37,14 @@ export function CategoryPicker({
             onPress={() => onSelectCategory('all')}
             accessibilityRole="button"
             accessibilityState={{ selected: selectedCategory === 'all' }}
-            style={[
+            style={({ pressed }) => [
               styles.horizontalItem,
               {
                 backgroundColor:
                   selectedCategory === 'all' ? theme.primary : theme.card,
                 borderColor:
                   selectedCategory === 'all' ? theme.primary : theme.borderStrong,
+                opacity: pressed ? 0.88 : 1,
               },
             ]}>
             <Ionicons
@@ -56,7 +57,7 @@ export function CategoryPicker({
                 styles.horizontalLabel,
                 {
                   color: selectedCategory === 'all' ? '#FFFFFF' : theme.text,
-                  fontWeight: selectedCategory === 'all' ? '700' : '600',
+                  fontWeight: selectedCategory === 'all' ? '700' : '500',
                 },
               ]}>
               All
@@ -73,11 +74,12 @@ export function CategoryPicker({
               onPress={() => onSelectCategory(category)}
               accessibilityRole="button"
               accessibilityState={{ selected: isSelected }}
-              style={[
+              style={({ pressed }) => [
                 styles.horizontalItem,
                 {
                   backgroundColor: isSelected ? theme.primary : theme.card,
                   borderColor: isSelected ? theme.primary : theme.borderStrong,
+                  opacity: pressed ? 0.88 : 1,
                 },
               ]}>
               <Ionicons
@@ -90,7 +92,7 @@ export function CategoryPicker({
                   styles.horizontalLabel,
                   {
                     color: isSelected ? '#FFFFFF' : theme.text,
-                    fontWeight: isSelected ? '700' : '600',
+                    fontWeight: isSelected ? '700' : '500',
                   },
                 ]}>
                 {category}
@@ -114,11 +116,12 @@ export function CategoryPicker({
             onPress={() => onSelectCategory(category)}
             accessibilityRole="button"
             accessibilityState={{ selected: isSelected }}
-            style={[
+            style={({ pressed }) => [
               styles.gridItem,
               {
                 backgroundColor: isSelected ? theme.primaryLight : theme.card,
                 borderColor: isSelected ? theme.primary : theme.border,
+                opacity: pressed ? 0.88 : 1,
               },
             ]}>
             <Ionicons
@@ -131,7 +134,7 @@ export function CategoryPicker({
                 styles.gridLabel,
                 {
                   color: isSelected ? theme.primary : theme.text,
-                  fontWeight: isSelected ? '700' : '600',
+                  fontWeight: isSelected ? '700' : '500',
                 },
               ]}>
               {category}
@@ -145,18 +148,19 @@ export function CategoryPicker({
 
 const styles = StyleSheet.create({
   horizontalContent: {
-    paddingVertical: 4,
+    paddingVertical: 2,
     paddingHorizontal: Spacing.four,
     gap: 6,
   },
   horizontalItem: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 10,
-    paddingVertical: 5,
-    borderRadius: BorderRadius.xs,
+    paddingHorizontal: 11,
+    paddingVertical: 6,
+    borderRadius: BorderRadius.full,
     borderWidth: 1,
     gap: 4,
+    minHeight: 32,
   },
   horizontalLabel: {
     fontSize: 12,
@@ -171,10 +175,11 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingVertical: 10,
     paddingHorizontal: 12,
-    borderRadius: BorderRadius.sm,
-    borderWidth: 1.5,
+    borderRadius: BorderRadius.md,
+    borderWidth: 1,
     gap: 8,
     width: '48.5%',
+    minHeight: 44,
   },
   gridLabel: {
     fontSize: 13,

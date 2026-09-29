@@ -19,6 +19,7 @@ export function StatusBadge({ type, status, size = 'md' }: StatusBadgeProps) {
     const bg = isLost ? theme.lostBg : theme.foundBg;
     const borderColor = isLost ? theme.lostBorder : theme.foundBorder;
     const textColor = isLost ? theme.lostText : theme.foundText;
+    const dotColor = isLost ? theme.lost : theme.found;
     const label = isLost ? 'LOST' : 'FOUND';
 
     return (
@@ -29,12 +30,12 @@ export function StatusBadge({ type, status, size = 'md' }: StatusBadgeProps) {
           { backgroundColor: bg, borderColor },
         ]}
         accessibilityRole="text"
-        accessibilityLabel={`Status: ${label}`}>
+        accessibilityLabel={`Type: ${label}`}>
         <View
           style={[
             styles.dot,
             size === 'sm' ? styles.dotSm : styles.dotMd,
-            { backgroundColor: isLost ? theme.lost : theme.found },
+            { backgroundColor: dotColor },
           ]}
         />
         <ThemedText
@@ -64,7 +65,7 @@ export function StatusBadge({ type, status, size = 'md' }: StatusBadgeProps) {
           { backgroundColor: bg, borderColor },
         ]}
         accessibilityRole="text"
-        accessibilityLabel={`Resolution: ${label}`}>
+        accessibilityLabel={`Status: ${label}`}>
         <ThemedText
           style={[
             styles.text,
@@ -89,17 +90,17 @@ const styles = StyleSheet.create({
     alignSelf: 'flex-start',
   },
   badgeSm: {
-    paddingHorizontal: 6,
-    paddingVertical: 2,
+    paddingHorizontal: 7,
+    paddingVertical: 2.5,
     gap: 4,
   },
   badgeMd: {
-    paddingHorizontal: 8,
-    paddingVertical: 3,
+    paddingHorizontal: 9,
+    paddingVertical: 3.5,
     gap: 5,
   },
   dot: {
-    borderRadius: 2,
+    borderRadius: 9999,
   },
   dotSm: {
     width: 5,
@@ -111,11 +112,11 @@ const styles = StyleSheet.create({
   },
   text: {
     fontWeight: '700',
-    letterSpacing: 0.4,
+    letterSpacing: 0.3,
   },
   textSm: {
     fontSize: 10,
-    lineHeight: 12,
+    lineHeight: 13,
   },
   textMd: {
     fontSize: 11,

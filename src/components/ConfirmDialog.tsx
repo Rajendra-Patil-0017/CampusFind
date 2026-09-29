@@ -8,7 +8,7 @@ import {
 import { ThemedText } from './themed-text';
 import { PrimaryButton } from './PrimaryButton';
 import { useTheme } from '@/hooks/use-theme';
-import { BorderRadius, Spacing } from '@/constants/theme';
+import { BorderRadius, Shadows, Spacing } from '@/constants/theme';
 import { Ionicons } from '@expo/vector-icons';
 
 interface ConfirmDialogProps {
@@ -55,17 +55,18 @@ export function ConfirmDialog({
               backgroundColor: theme.card,
               borderColor: theme.border,
             },
+            Shadows.card,
           ]}>
           <View
             style={[
               styles.iconCircle,
               {
-                backgroundColor: isDestructive ? theme.lostBg : theme.primaryLight,
+                backgroundColor: isDestructive ? theme.dangerBg : theme.primaryLight,
               },
             ]}>
             <Ionicons
               name={icon}
-              size={32}
+              size={28}
               color={isDestructive ? theme.danger : theme.primary}
             />
           </View>
@@ -100,7 +101,7 @@ export function ConfirmDialog({
 const styles = StyleSheet.create({
   overlay: {
     flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.55)',
+    backgroundColor: 'rgba(18, 28, 34, 0.65)',
     justifyContent: 'center',
     alignItems: 'center',
     padding: Spacing.four,
@@ -110,16 +111,16 @@ const styles = StyleSheet.create({
   },
   dialogContainer: {
     width: '100%',
-    maxWidth: 400,
-    borderRadius: BorderRadius.xl,
+    maxWidth: 380,
+    borderRadius: BorderRadius.lg,
     padding: Spacing.five,
     alignItems: 'center',
     borderWidth: 1,
   },
   iconCircle: {
-    width: 60,
-    height: 60,
-    borderRadius: 30,
+    width: 52,
+    height: 52,
+    borderRadius: BorderRadius.full,
     alignItems: 'center',
     justifyContent: 'center',
     marginBottom: Spacing.three,

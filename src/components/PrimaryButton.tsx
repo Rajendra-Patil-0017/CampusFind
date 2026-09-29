@@ -8,7 +8,7 @@ import {
 } from 'react-native';
 import { ThemedText } from './themed-text';
 import { useTheme } from '@/hooks/use-theme';
-import { BorderRadius, Shadows, Spacing } from '@/constants/theme';
+import { BorderRadius, Spacing } from '@/constants/theme';
 import { Ionicons } from '@expo/vector-icons';
 
 interface PrimaryButtonProps {
@@ -44,10 +44,10 @@ export function PrimaryButton({
       return pressed ? theme.primaryDark : theme.primary;
     }
     if (variant === 'secondary') {
-      return pressed ? theme.borderStrong : theme.inputBg;
+      return pressed ? theme.border : theme.card;
     }
     if (variant === 'danger') {
-      return pressed ? '#A8321B' : theme.danger;
+      return pressed ? '#A82525' : theme.danger;
     }
     if (variant === 'outline' || variant === 'ghost') {
       return pressed ? theme.primaryLight : 'transparent';
@@ -72,24 +72,27 @@ export function PrimaryButton({
   };
 
   const getBorderColor = () => {
+    if (disabled || loading) {
+      return 'transparent';
+    }
     if (variant === 'outline') {
-      return disabled ? theme.border : theme.primary;
+      return theme.primary;
     }
     if (variant === 'secondary') {
-      return theme.border;
+      return theme.borderStrong;
     }
     return 'transparent';
   };
 
   const sizeStyles = {
-    sm: { paddingVertical: 6, paddingHorizontal: 12, minHeight: 34 },
-    md: { paddingVertical: 10, paddingHorizontal: 16, minHeight: 44 },
-    lg: { paddingVertical: 14, paddingHorizontal: 20, minHeight: 52 },
+    sm: { paddingVertical: 8, paddingHorizontal: 14, minHeight: 36, borderRadius: BorderRadius.sm },
+    md: { paddingVertical: 12, paddingHorizontal: 18, minHeight: 48, borderRadius: BorderRadius.md },
+    lg: { paddingVertical: 14, paddingHorizontal: 22, minHeight: 52, borderRadius: BorderRadius.lg },
   }[size];
 
   const fontSizeStyles = {
     sm: { fontSize: 13 },
-    md: { fontSize: 14 },
+    md: { fontSize: 15 },
     lg: { fontSize: 16 },
   }[size];
 
@@ -107,8 +110,8 @@ export function PrimaryButton({
           backgroundColor: getBackgroundColor(pressed),
           borderColor: getBorderColor(),
           borderWidth: variant === 'outline' || variant === 'secondary' ? 1 : 0,
+          opacity: pressed && !disabled && !loading ? 0.92 : 1,
         },
-        variant === 'primary' && !disabled && !loading ? Shadows.button : null,
         style,
       ]}>
       {loading ? (
@@ -118,7 +121,7 @@ export function PrimaryButton({
           {icon && (
             <Ionicons
               name={icon}
-              size={size === 'sm' ? 15 : size === 'lg' ? 20 : 17}
+              size={size === 'sm' ? 16 : size === 'lg' ? 20 : 18}
               color={getTextColor()}
               style={styles.icon}
             />
@@ -142,13 +145,12 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    borderRadius: BorderRadius.sm,
   },
   icon: {
     marginRight: Spacing.two,
   },
   text: {
-    fontWeight: '700',
+    fontWeight: '600',
     textAlign: 'center',
     letterSpacing: -0.1,
   },

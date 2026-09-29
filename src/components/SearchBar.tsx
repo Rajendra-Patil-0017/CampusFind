@@ -43,7 +43,7 @@ export function SearchBar({
         <Ionicons
           name="search"
           size={18}
-          color={theme.textMuted}
+          color={theme.textSecondary}
           style={styles.searchIcon}
         />
         <TextInput
@@ -67,7 +67,7 @@ export function SearchBar({
             hitSlop={8}
             accessibilityLabel="Clear search text"
             style={styles.clearButton}>
-            <Ionicons name="close-circle" size={17} color={theme.textSecondary} />
+            <Ionicons name="close-circle" size={18} color={theme.textSecondary} />
           </Pressable>
         )}
       </View>
@@ -82,7 +82,7 @@ export function SearchBar({
             {
               backgroundColor: hasActiveFilters ? theme.primary : theme.card,
               borderColor: hasActiveFilters ? theme.primary : theme.borderStrong,
-              opacity: pressed ? 0.85 : 1,
+              opacity: pressed ? 0.88 : 1,
             },
           ]}>
           <Ionicons
@@ -106,8 +106,8 @@ const styles = StyleSheet.create({
     flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
-    height: 44,
-    borderRadius: BorderRadius.sm,
+    height: 46,
+    borderRadius: BorderRadius.md,
     borderWidth: 1,
     paddingHorizontal: Spacing.three,
   },
@@ -124,9 +124,9 @@ const styles = StyleSheet.create({
     padding: Spacing.half,
   },
   filterButton: {
-    width: 44,
-    height: 44,
-    borderRadius: BorderRadius.sm,
+    width: 46,
+    height: 46,
+    borderRadius: BorderRadius.md,
     borderWidth: 1,
     alignItems: 'center',
     justifyContent: 'center',

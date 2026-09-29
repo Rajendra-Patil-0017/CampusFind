@@ -1,5 +1,9 @@
 import React from 'react';
-import { ActivityIndicator, StyleSheet, View } from 'react-native';
+import {
+  ActivityIndicator,
+  StyleSheet,
+  View,
+} from 'react-native';
 import { ThemedText } from './themed-text';
 import { useTheme } from '@/hooks/use-theme';
 import { Spacing } from '@/constants/theme';
@@ -8,7 +12,7 @@ interface LoadingStateProps {
   message?: string;
 }
 
-export function LoadingState({ message = 'Loading posts...' }: LoadingStateProps) {
+export function LoadingState({ message = 'Loading...' }: LoadingStateProps) {
   const theme = useTheme();
 
   return (
@@ -25,12 +29,13 @@ export function LoadingState({ message = 'Loading posts...' }: LoadingStateProps
 
 const styles = StyleSheet.create({
   container: {
-    paddingVertical: Spacing.seven,
+    flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
-    gap: Spacing.three,
+    padding: Spacing.six,
   },
   message: {
+    marginTop: Spacing.three,
     fontSize: 14,
     fontWeight: '500',
   },

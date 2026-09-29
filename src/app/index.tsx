@@ -15,39 +15,22 @@ import { Ionicons } from '@expo/vector-icons';
 export default function SplashScreen() {
   const theme = useTheme();
   const [fadeAnim] = useState(() => new Animated.Value(0));
-  const [scaleAnim] = useState(() => new Animated.Value(0.92));
-  const [pulseAnim] = useState(() => new Animated.Value(1));
+  const [scaleAnim] = useState(() => new Animated.Value(0.95));
 
   useEffect(() => {
     Animated.parallel([
       Animated.timing(fadeAnim, {
         toValue: 1,
-        duration: 450,
+        duration: 400,
         useNativeDriver: true,
       }),
       Animated.spring(scaleAnim, {
         toValue: 1,
-        friction: 7,
+        friction: 8,
         tension: 40,
         useNativeDriver: true,
       }),
     ]).start();
-
-    const pulseLoop = Animated.loop(
-      Animated.sequence([
-        Animated.timing(pulseAnim, {
-          toValue: 1.05,
-          duration: 650,
-          useNativeDriver: true,
-        }),
-        Animated.timing(pulseAnim, {
-          toValue: 1,
-          duration: 650,
-          useNativeDriver: true,
-        }),
-      ])
-    );
-    pulseLoop.start();
 
     let isMounted = true;
     const prepareApp = async () => {
@@ -59,19 +42,17 @@ export default function SplashScreen() {
 
       setTimeout(() => {
         if (isMounted) {
-          pulseLoop.stop();
           router.replace('/(tabs)' as any);
         }
-      }, 1100);
+      }, 950);
     };
 
     prepareApp();
 
     return () => {
       isMounted = false;
-      pulseLoop.stop();
     };
-  }, [fadeAnim, scaleAnim, pulseAnim]);
+  }, [fadeAnim, scaleAnim]);
 
   return (
     <View style={[styles.container, { backgroundColor: theme.background }]}>
@@ -83,26 +64,25 @@ export default function SplashScreen() {
             transform: [{ scale: scaleAnim }],
           },
         ]}>
-        <Animated.View
+        <View
           style={[
             styles.emblem,
             {
               backgroundColor: theme.card,
               borderColor: theme.borderStrong,
-              transform: [{ scale: pulseAnim }],
             },
           ]}>
           <View style={[styles.innerBadge, { backgroundColor: theme.primary }]}>
-            <Ionicons name="search" size={36} color="#FFFFFF" />
+            <Ionicons name="search" size={32} color="#FFFFFF" />
           </View>
-        </Animated.View>
+        </View>
 
         <ThemedText style={styles.appName}>{APP_CONFIG.name}</ThemedText>
-        <ThemedText style={[styles.tagline, { color: theme.textSecondary }]}>
+        <ThemedText style={[styles.tagline, { color: theme.teal }]}>
           {APP_CONFIG.tagline}
         </ThemedText>
-        <ThemedText style={[styles.registrySubtitle, { color: theme.textMuted }]}>
-          Campus Lost & Found Registry
+        <ThemedText style={[styles.registrySubtitle, { color: theme.textSecondary }]}>
+          Campus Noticeboard & Registry
         </ThemedText>
       </Animated.View>
 
@@ -126,29 +106,29 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   emblem: {
-    width: 88,
-    height: 88,
-    borderRadius: BorderRadius.md,
+    width: 80,
+    height: 80,
+    borderRadius: BorderRadius.lg,
     borderWidth: 1.5,
     alignItems: 'center',
     justifyContent: 'center',
     marginBottom: Spacing.four,
   },
   innerBadge: {
-    width: 64,
-    height: 64,
-    borderRadius: BorderRadius.sm,
+    width: 58,
+    height: 58,
+    borderRadius: BorderRadius.md,
     alignItems: 'center',
     justifyContent: 'center',
   },
   appName: {
-    fontSize: 28,
+    fontSize: 26,
     fontWeight: '800',
-    letterSpacing: -0.6,
+    letterSpacing: -0.5,
     marginBottom: 4,
   },
   tagline: {
-    fontSize: 15,
+    fontSize: 14,
     fontWeight: '600',
     textAlign: 'center',
   },

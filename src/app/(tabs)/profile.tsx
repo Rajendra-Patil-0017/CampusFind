@@ -18,7 +18,7 @@ import { useTheme } from '@/hooks/use-theme';
 import { StorageService } from '@/services/storage';
 import { APP_CONFIG } from '@/constants/config';
 import { LostFoundItem } from '@/types/item';
-import { BorderRadius, Shadows, Spacing } from '@/constants/theme';
+import { BorderRadius, ScreenPadding, Shadows, Spacing } from '@/constants/theme';
 import { Ionicons } from '@expo/vector-icons';
 
 export default function ProfileScreen() {
@@ -100,61 +100,62 @@ export default function ProfileScreen() {
     <SafeAreaView
       style={[styles.safeArea, { backgroundColor: theme.background }]}
       edges={['top', 'left', 'right']}>
-      {/* Screen Header */}
+      {/* Header */}
       <View style={styles.header}>
-        <ThemedText style={styles.headerTitle}>Account & Storage</ThemedText>
+        <ThemedText style={styles.headerTitle}>Profile & Tools</ThemedText>
         <ThemedText style={[styles.headerSubtitle, { color: theme.textSecondary }]}>
-          Campus Member Ledger & Local Database Controls
+          Account overview and local data management
         </ThemedText>
       </View>
 
       <ScrollView
         showsVerticalScrollIndicator={false}
         contentContainerStyle={styles.scrollContent}>
-        {/* User Badge Card */}
+        {/* User Profile Card */}
         <View
           style={[
             styles.userCard,
             {
               backgroundColor: theme.card,
-              borderColor: theme.borderStrong,
+              borderColor: theme.border,
             },
-            Shadows.tag,
+            Shadows.subtle,
           ]}>
           <View
             style={[
               styles.avatar,
               {
                 backgroundColor: theme.primaryLight,
-                borderColor: theme.borderStrong,
+                borderColor: theme.border,
               },
             ]}>
-            <Ionicons name="school" size={26} color={theme.primary} />
+            <Ionicons name="school-outline" size={26} color={theme.primary} />
           </View>
           <View style={styles.userInfo}>
             <ThemedText style={styles.userName}>Campus Member</ThemedText>
             <ThemedText style={[styles.userRole, { color: theme.textSecondary }]}>
-              Device ID: {APP_CONFIG.localUserId}
+              Device: {APP_CONFIG.localUserId}
             </ThemedText>
             <View style={styles.offlineBadge}>
-              <View style={[styles.offlineDot, { backgroundColor: theme.found }]} />
-              <ThemedText style={[styles.offlineText, { color: theme.foundText }]}>
-                100% Offline Storage
+              <View style={[styles.offlineDot, { backgroundColor: theme.teal }]} />
+              <ThemedText style={[styles.offlineText, { color: theme.textSecondary }]}>
+                Offline-First Storage Active
               </ThemedText>
             </View>
           </View>
         </View>
 
-        {/* Overview Stats */}
-        <ThemedText style={styles.sectionHeader}>Campus Activity</ThemedText>
+        {/* Campus Activity Stats */}
+        <ThemedText style={[styles.sectionHeading, { color: theme.textSecondary }]}>
+          CAMPUS DIRECTORY OVERVIEW
+        </ThemedText>
         <View style={styles.statsGrid}>
           <View
             style={[
               styles.statCard,
-              { backgroundColor: theme.card, borderColor: theme.borderStrong },
-              Shadows.tag,
+              { backgroundColor: theme.card, borderColor: theme.border },
             ]}>
-            <ThemedText style={[styles.statNumber, { color: theme.primary }]}>
+            <ThemedText style={[styles.statValue, { color: theme.primary }]}>
               {myPosts.length}
             </ThemedText>
             <ThemedText style={[styles.statLabel, { color: theme.textSecondary }]}>
@@ -165,10 +166,9 @@ export default function ProfileScreen() {
           <View
             style={[
               styles.statCard,
-              { backgroundColor: theme.card, borderColor: theme.borderStrong },
-              Shadows.tag,
+              { backgroundColor: theme.card, borderColor: theme.border },
             ]}>
-            <ThemedText style={[styles.statNumber, { color: theme.lost }]}>
+            <ThemedText style={[styles.statValue, { color: theme.lost }]}>
               {activeLost}
             </ThemedText>
             <ThemedText style={[styles.statLabel, { color: theme.textSecondary }]}>
@@ -179,10 +179,9 @@ export default function ProfileScreen() {
           <View
             style={[
               styles.statCard,
-              { backgroundColor: theme.card, borderColor: theme.borderStrong },
-              Shadows.tag,
+              { backgroundColor: theme.card, borderColor: theme.border },
             ]}>
-            <ThemedText style={[styles.statNumber, { color: theme.found }]}>
+            <ThemedText style={[styles.statValue, { color: theme.teal }]}>
               {activeFound}
             </ThemedText>
             <ThemedText style={[styles.statLabel, { color: theme.textSecondary }]}>
@@ -193,10 +192,9 @@ export default function ProfileScreen() {
           <View
             style={[
               styles.statCard,
-              { backgroundColor: theme.card, borderColor: theme.borderStrong },
-              Shadows.tag,
+              { backgroundColor: theme.card, borderColor: theme.border },
             ]}>
-            <ThemedText style={[styles.statNumber, { color: theme.resolved }]}>
+            <ThemedText style={[styles.statValue, { color: theme.resolved }]}>
               {resolvedTotal}
             </ThemedText>
             <ThemedText style={[styles.statLabel, { color: theme.textSecondary }]}>
@@ -205,126 +203,95 @@ export default function ProfileScreen() {
           </View>
         </View>
 
-        {/* Management Actions */}
-        <ThemedText style={styles.sectionHeader}>Quick Management</ThemedText>
+        {/* Data & Storage Settings */}
+        <ThemedText
+          style={[
+            styles.sectionHeading,
+            { color: theme.textSecondary, marginTop: Spacing.four },
+          ]}>
+          DATA PERSISTENCE & BACKUP
+        </ThemedText>
+
         <View
           style={[
-            styles.menuList,
-            { backgroundColor: theme.card, borderColor: theme.borderStrong },
-            Shadows.tag,
+            styles.actionGroup,
+            { backgroundColor: theme.card, borderColor: theme.border },
           ]}>
-          <Pressable
-            onPress={() => router.push('/(tabs)/my-posts')}
-            style={({ pressed }) => [
-              styles.menuItem,
-              { backgroundColor: pressed ? theme.inputBg : 'transparent' },
-            ]}>
-            <View style={[styles.menuIconCircle, { backgroundColor: theme.primaryLight }]}>
-              <Ionicons name="file-tray-full" size={16} color={theme.primary} />
-            </View>
-            <View style={styles.menuTextContainer}>
-              <ThemedText style={styles.menuTitle}>My Reports</ThemedText>
-              <ThemedText style={[styles.menuSubtitle, { color: theme.textSecondary }]}>
-                Manage your {myPosts.length} submitted notices
-              </ThemedText>
-            </View>
-            <Ionicons name="chevron-forward" size={16} color={theme.textMuted} />
-          </Pressable>
-
-          <View style={[styles.divider, { backgroundColor: theme.border }]} />
-
-          <Pressable
-            onPress={() => router.push('/(tabs)/add')}
-            style={({ pressed }) => [
-              styles.menuItem,
-              { backgroundColor: pressed ? theme.inputBg : 'transparent' },
-            ]}>
-            <View style={[styles.menuIconCircle, { backgroundColor: theme.foundBg }]}>
-              <Ionicons name="add-circle" size={16} color={theme.found} />
-            </View>
-            <View style={styles.menuTextContainer}>
-              <ThemedText style={styles.menuTitle}>Post a New Notice</ThemedText>
-              <ThemedText style={[styles.menuSubtitle, { color: theme.textSecondary }]}>
-                Report a lost or found item on campus
-              </ThemedText>
-            </View>
-            <Ionicons name="chevron-forward" size={16} color={theme.textMuted} />
-          </Pressable>
-
-          <View style={[styles.divider, { backgroundColor: theme.border }]} />
-
           <Pressable
             onPress={handleExportData}
             style={({ pressed }) => [
-              styles.menuItem,
-              { backgroundColor: pressed ? theme.inputBg : 'transparent' },
+              styles.actionItem,
+              { backgroundColor: pressed ? theme.background : 'transparent' },
             ]}>
-            <View style={[styles.menuIconCircle, { backgroundColor: theme.inputBg }]}>
-              <Ionicons name="download" size={16} color={theme.text} />
+            <View style={[styles.actionIconCircle, { backgroundColor: theme.primaryLight }]}>
+              <Ionicons name="download-outline" size={18} color={theme.primary} />
             </View>
-            <View style={styles.menuTextContainer}>
-              <ThemedText style={styles.menuTitle}>Export Database (JSON Backup)</ThemedText>
-              <ThemedText style={[styles.menuSubtitle, { color: theme.textSecondary }]}>
-                Export local items to save or share offline
+            <View style={styles.actionItemTextCol}>
+              <ThemedText style={styles.actionItemTitle}>Export JSON Backup</ThemedText>
+              <ThemedText style={[styles.actionItemDesc, { color: theme.textSecondary }]}>
+                Share or save your offline reports to a local JSON file
               </ThemedText>
             </View>
             <Ionicons name="chevron-forward" size={16} color={theme.textMuted} />
           </Pressable>
 
-          <View style={[styles.divider, { backgroundColor: theme.border }]} />
+          <View style={[styles.rowDivider, { backgroundColor: theme.border }]} />
 
-          <Pressable
-            onPress={() => router.push('/about')}
-            style={({ pressed }) => [
-              styles.menuItem,
-              { backgroundColor: pressed ? theme.inputBg : 'transparent' },
-            ]}>
-            <View style={[styles.menuIconCircle, { backgroundColor: theme.inputBg }]}>
-              <Ionicons name="information-circle" size={16} color={theme.text} />
-            </View>
-            <View style={styles.menuTextContainer}>
-              <ThemedText style={styles.menuTitle}>About CampusFind</ThemedText>
-              <ThemedText style={[styles.menuSubtitle, { color: theme.textSecondary }]}>
-                Platform architecture, version, and campus guidelines
-              </ThemedText>
-            </View>
-            <Ionicons name="chevron-forward" size={16} color={theme.textMuted} />
-          </Pressable>
-        </View>
-
-        {/* Data Maintenance */}
-        <ThemedText style={styles.sectionHeader}>Database Maintenance</ThemedText>
-        <View
-          style={[
-            styles.menuList,
-            { backgroundColor: theme.card, borderColor: theme.borderStrong },
-            Shadows.tag,
-          ]}>
           <Pressable
             onPress={() => setResetModalVisible(true)}
             style={({ pressed }) => [
-              styles.menuItem,
-              { backgroundColor: pressed ? theme.inputBg : 'transparent' },
+              styles.actionItem,
+              { backgroundColor: pressed ? theme.background : 'transparent' },
             ]}>
-            <View style={[styles.menuIconCircle, { backgroundColor: theme.lostBg }]}>
-              <Ionicons name="refresh" size={16} color={theme.lost} />
+            <View style={[styles.actionIconCircle, { backgroundColor: theme.lostBg }]}>
+              <Ionicons name="refresh-outline" size={18} color={theme.lost} />
             </View>
-            <View style={styles.menuTextContainer}>
-              <ThemedText style={[styles.menuTitle, { color: theme.lost }]}>
-                Reset to Sample Notices
-              </ThemedText>
-              <ThemedText style={[styles.menuSubtitle, { color: theme.textSecondary }]}>
-                Restores standard campus demonstration data
+            <View style={styles.actionItemTextCol}>
+              <ThemedText style={styles.actionItemTitle}>Restore Demo Notices</ThemedText>
+              <ThemedText style={[styles.actionItemDesc, { color: theme.textSecondary }]}>
+                Reset registry to default campus sample records
               </ThemedText>
             </View>
             <Ionicons name="chevron-forward" size={16} color={theme.textMuted} />
           </Pressable>
         </View>
 
-        {/* Footer info */}
-        <View style={styles.footer}>
+        {/* Information & Safety */}
+        <ThemedText
+          style={[
+            styles.sectionHeading,
+            { color: theme.textSecondary, marginTop: Spacing.four },
+          ]}>
+          COMMUNITY & SAFETY
+        </ThemedText>
+
+        <View
+          style={[
+            styles.actionGroup,
+            { backgroundColor: theme.card, borderColor: theme.border },
+          ]}>
+          <Pressable
+            onPress={() => router.push('/about')}
+            style={({ pressed }) => [
+              styles.actionItem,
+              { backgroundColor: pressed ? theme.background : 'transparent' },
+            ]}>
+            <View style={[styles.actionIconCircle, { backgroundColor: theme.accentLight }]}>
+              <Ionicons name="information-circle-outline" size={18} color={theme.teal} />
+            </View>
+            <View style={styles.actionItemTextCol}>
+              <ThemedText style={styles.actionItemTitle}>About CampusFind</ThemedText>
+              <ThemedText style={[styles.actionItemDesc, { color: theme.textSecondary }]}>
+                Mission, architecture, and version details
+              </ThemedText>
+            </View>
+            <Ionicons name="chevron-forward" size={16} color={theme.textMuted} />
+          </Pressable>
+        </View>
+
+        <View style={styles.footerNote}>
           <ThemedText style={[styles.footerText, { color: theme.textMuted }]}>
-            CampusFind v{APP_CONFIG.version} • Offline-First Native Architecture
+            CampusFind v{APP_CONFIG.version} • Offline Local Storage
           </ThemedText>
         </View>
       </ScrollView>
@@ -332,21 +299,20 @@ export default function ProfileScreen() {
       {/* Reset Confirmation Dialog */}
       <ConfirmDialog
         visible={resetModalVisible}
-        title="Reset to Sample Notices?"
-        message="This replaces the current local database with standard campus demo notices."
-        confirmText="Reset Database"
+        title="Reset Sample Data?"
+        message="This will reset the local database to include the initial campus sample records. Any reports you have created will be replaced."
+        confirmText="Reset"
         cancelText="Cancel"
         isDestructive
-        icon="refresh-circle-outline"
+        icon="refresh-outline"
         onConfirm={handleResetToSamples}
         onCancel={() => setResetModalVisible(false)}
       />
 
-      {/* Toast Feedback */}
+      {/* Snackbar */}
       <Snackbar
         visible={snackbarVisible}
         message={snackbarMessage}
-        type="success"
         onDismiss={() => setSnackbarVisible(false)}
       />
     </SafeAreaView>
@@ -358,7 +324,7 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   header: {
-    paddingHorizontal: Spacing.four,
+    paddingHorizontal: ScreenPadding,
     paddingTop: Spacing.two,
     paddingBottom: Spacing.two,
   },
@@ -368,129 +334,127 @@ const styles = StyleSheet.create({
     letterSpacing: -0.4,
   },
   headerSubtitle: {
-    fontSize: 12,
-    fontWeight: '500',
+    fontSize: 13,
     marginTop: 1,
   },
   scrollContent: {
-    paddingHorizontal: Spacing.four,
-    paddingTop: Spacing.two,
-    paddingBottom: Spacing.seven,
+    paddingHorizontal: ScreenPadding,
+    paddingBottom: 80,
   },
   userCard: {
     flexDirection: 'row',
     alignItems: 'center',
     padding: Spacing.four,
-    borderRadius: BorderRadius.sm,
+    borderRadius: BorderRadius.lg,
     borderWidth: 1,
-    gap: Spacing.three,
+    marginTop: Spacing.two,
     marginBottom: Spacing.three,
   },
   avatar: {
-    width: 52,
-    height: 52,
-    borderRadius: BorderRadius.xs,
+    width: 50,
+    height: 50,
+    borderRadius: BorderRadius.full,
     borderWidth: 1,
     alignItems: 'center',
     justifyContent: 'center',
+    marginRight: Spacing.three,
   },
   userInfo: {
     flex: 1,
   },
   userName: {
     fontSize: 16,
-    fontWeight: '800',
-    letterSpacing: -0.2,
+    fontWeight: '700',
   },
   userRole: {
-    fontSize: 11,
-    marginTop: 1,
+    fontSize: 12,
+    marginTop: 2,
   },
   offlineBadge: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 5,
     marginTop: 4,
+    gap: 5,
   },
   offlineDot: {
-    width: 6,
-    height: 6,
-    borderRadius: 3,
+    width: 7,
+    height: 7,
+    borderRadius: 9999,
   },
   offlineText: {
     fontSize: 11,
-    fontWeight: '700',
+    fontWeight: '500',
   },
-  sectionHeader: {
+  sectionHeading: {
     fontSize: 11,
-    fontWeight: '800',
-    textTransform: 'uppercase',
+    fontWeight: '700',
     letterSpacing: 0.6,
-    marginVertical: Spacing.two,
-    paddingLeft: 2,
+    marginBottom: Spacing.two,
   },
   statsGrid: {
     flexDirection: 'row',
-    flexWrap: 'wrap',
     gap: 8,
-    marginBottom: Spacing.three,
+    marginBottom: Spacing.two,
   },
   statCard: {
-    width: '48.5%',
-    padding: Spacing.three,
-    borderRadius: BorderRadius.xs,
+    flex: 1,
+    borderRadius: BorderRadius.md,
     borderWidth: 1,
+    paddingVertical: 12,
+    paddingHorizontal: 8,
     alignItems: 'center',
   },
-  statNumber: {
-    fontSize: 22,
+  statValue: {
+    fontSize: 20,
     fontWeight: '800',
+    letterSpacing: -0.3,
   },
   statLabel: {
     fontSize: 11,
-    fontWeight: '600',
+    fontWeight: '500',
     marginTop: 2,
+    textAlign: 'center',
   },
-  menuList: {
-    borderRadius: BorderRadius.sm,
+  actionGroup: {
+    borderRadius: BorderRadius.lg,
     borderWidth: 1,
     overflow: 'hidden',
-    marginBottom: Spacing.three,
   },
-  menuItem: {
+  actionItem: {
     flexDirection: 'row',
     alignItems: 'center',
     padding: Spacing.three,
-    gap: Spacing.three,
   },
-  menuIconCircle: {
-    width: 32,
-    height: 32,
-    borderRadius: BorderRadius.xs,
+  actionIconCircle: {
+    width: 36,
+    height: 36,
+    borderRadius: BorderRadius.md,
     alignItems: 'center',
     justifyContent: 'center',
+    marginRight: Spacing.three,
   },
-  menuTextContainer: {
+  actionItemTextCol: {
     flex: 1,
   },
-  menuTitle: {
+  actionItemTitle: {
     fontSize: 14,
-    fontWeight: '700',
+    fontWeight: '600',
   },
-  menuSubtitle: {
-    fontSize: 11,
+  actionItemDesc: {
+    fontSize: 12,
     marginTop: 1,
   },
-  divider: {
+  rowDivider: {
     height: 1,
-    marginHorizontal: Spacing.three,
+    marginLeft: 56,
   },
-  footer: {
+  footerNote: {
     alignItems: 'center',
-    paddingVertical: Spacing.four,
+    marginTop: Spacing.six,
+    marginBottom: Spacing.four,
   },
   footerText: {
-    fontSize: 11,
+    fontSize: 12,
     fontWeight: '500',
   },
 });

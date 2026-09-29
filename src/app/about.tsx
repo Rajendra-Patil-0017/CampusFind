@@ -5,7 +5,7 @@ import { ThemedText } from '@/components/themed-text';
 import { ScreenHeader } from '@/components/ScreenHeader';
 import { useTheme } from '@/hooks/use-theme';
 import { APP_CONFIG } from '@/constants/config';
-import { BorderRadius, Shadows, Spacing } from '@/constants/theme';
+import { BorderRadius, ScreenPadding, Shadows, Spacing } from '@/constants/theme';
 import { Ionicons } from '@expo/vector-icons';
 
 export default function AboutScreen() {
@@ -24,8 +24,8 @@ export default function AboutScreen() {
         <View
           style={[
             styles.brandCard,
-            { backgroundColor: theme.card, borderColor: theme.borderStrong },
-            Shadows.tag,
+            { backgroundColor: theme.card, borderColor: theme.border },
+            Shadows.subtle,
           ]}>
           <View
             style={[
@@ -35,7 +35,7 @@ export default function AboutScreen() {
             <Ionicons name="school-outline" size={32} color={theme.primary} />
           </View>
           <ThemedText style={styles.appName}>{APP_CONFIG.name}</ThemedText>
-          <ThemedText style={[styles.tagline, { color: theme.primary }]}>
+          <ThemedText style={[styles.tagline, { color: theme.teal }]}>
             {APP_CONFIG.tagline}
           </ThemedText>
           <ThemedText style={[styles.version, { color: theme.textMuted }]}>
@@ -47,96 +47,77 @@ export default function AboutScreen() {
         <View
           style={[
             styles.sectionCard,
-            { backgroundColor: theme.card, borderColor: theme.borderStrong },
-            Shadows.tag,
+            { backgroundColor: theme.card, borderColor: theme.border },
+            Shadows.subtle,
           ]}>
           <ThemedText style={styles.sectionTitle}>Purpose & Mission</ThemedText>
           <ThemedText style={[styles.bodyText, { color: theme.text }]}>
-            CampusFind is an offline-first lost-and-found bulletin built specifically
-            for colleges and universities. It replaces scattered physical paper flyers
-            and lost item chaos with a unified, real-time campus registry where students
-            and staff can record, search, and safely recover misplaced items.
+            CampusFind is an offline-first lost-and-found noticeboard built specifically
+            for colleges and universities. It replaces paper flyers and fragmented social
+            media posts with a clean, searchable campus registry where students and staff can
+            quickly report, locate, and return misplaced belongings.
           </ThemedText>
         </View>
 
-        {/* Core Capabilities */}
+        {/* Safety Guidelines */}
         <View
           style={[
             styles.sectionCard,
-            { backgroundColor: theme.card, borderColor: theme.borderStrong },
-            Shadows.tag,
+            { backgroundColor: theme.card, borderColor: theme.border },
+            Shadows.subtle,
           ]}>
-          <ThemedText style={styles.sectionTitle}>Key Capabilities</ThemedText>
+          <ThemedText style={styles.sectionTitle}>Campus Safety Tips</ThemedText>
 
-          <View style={styles.featureItem}>
-            <Ionicons name="checkmark-circle" size={16} color={theme.found} />
-            <ThemedText style={[styles.featureText, { color: theme.text }]}>
-              <ThemedText style={styles.boldText}>Fast Intake: </ThemedText>
-              Report lost and found items with precise campus coordinates and optional photos.
-            </ThemedText>
+          <View style={styles.safetyRow}>
+            <Ionicons name="location-outline" size={18} color={theme.teal} style={styles.safetyIcon} />
+            <View style={styles.safetyCol}>
+              <ThemedText style={styles.safetyHeading}>Public Handover Locations</ThemedText>
+              <ThemedText style={[styles.safetyDesc, { color: theme.textSecondary }]}>
+                Arrange meetups in well-lit, high-traffic campus spaces such as the Student
+                Center foyer, Library front desk, or Campus Dining commons.
+              </ThemedText>
+            </View>
           </View>
 
-          <View style={styles.featureItem}>
-            <Ionicons name="checkmark-circle" size={16} color={theme.found} />
-            <ThemedText style={[styles.featureText, { color: theme.text }]}>
-              <ThemedText style={styles.boldText}>Multi-Filter Bulletin: </ThemedText>
-              Instantly search across categories, statuses, and locations in real time.
-            </ThemedText>
+          <View style={[styles.divider, { backgroundColor: theme.border }]} />
+
+          <View style={styles.safetyRow}>
+            <Ionicons name="checkmark-circle-outline" size={18} color={theme.teal} style={styles.safetyIcon} />
+            <View style={styles.safetyCol}>
+              <ThemedText style={styles.safetyHeading}>Verify Ownership</ThemedText>
+              <ThemedText style={[styles.safetyDesc, { color: theme.textSecondary }]}>
+                Ask claimants to describe distinctive features (e.g., lock screen wallpaper,
+                stickers, unique case scratches) or present valid student ID before handing over valuables.
+              </ThemedText>
+            </View>
           </View>
 
-          <View style={styles.featureItem}>
-            <Ionicons name="checkmark-circle" size={16} color={theme.found} />
-            <ThemedText style={[styles.featureText, { color: theme.text }]}>
-              <ThemedText style={styles.boldText}>Local Persistence: </ThemedText>
-              100% offline data integrity with JSON export and recovery tools.
-            </ThemedText>
-          </View>
+          <View style={[styles.divider, { backgroundColor: theme.border }]} />
 
-          <View style={styles.featureItem}>
-            <Ionicons name="checkmark-circle" size={16} color={theme.found} />
-            <ThemedText style={[styles.featureText, { color: theme.text }]}>
-              <ThemedText style={styles.boldText}>Direct Handover: </ThemedText>
-              One-tap communication and native OS sharing to reunite items faster.
-            </ThemedText>
+          <View style={styles.safetyRow}>
+            <Ionicons name="shield-outline" size={18} color={theme.teal} style={styles.safetyIcon} />
+            <View style={styles.safetyCol}>
+              <ThemedText style={styles.safetyHeading}>Official Department Desks</ThemedText>
+              <ThemedText style={[styles.safetyDesc, { color: theme.textSecondary }]}>
+                For items like official IDs, credit cards, or master keys, hand them over to
+                Campus Security or Student Services for official custody.
+              </ThemedText>
+            </View>
           </View>
         </View>
 
-        {/* Tech Stack */}
+        {/* Data Architecture Note */}
         <View
           style={[
             styles.sectionCard,
-            { backgroundColor: theme.card, borderColor: theme.borderStrong },
-            Shadows.tag,
+            { backgroundColor: theme.card, borderColor: theme.border },
+            Shadows.subtle,
           ]}>
-          <ThemedText style={styles.sectionTitle}>Technology Stack</ThemedText>
-
-          <View style={styles.techBadgeRow}>
-            {['Expo SDK 57', 'React Native 0.86', 'TypeScript', 'Expo Router', 'AsyncStorage', 'Reanimated'].map((t) => (
-              <View
-                key={t}
-                style={[
-                  styles.techBadge,
-                  { backgroundColor: theme.background, borderColor: theme.borderStrong },
-                ]}>
-                <ThemedText style={[styles.techBadgeText, { color: theme.text }]}>
-                  {t}
-                </ThemedText>
-              </View>
-            ))}
-          </View>
-        </View>
-
-        {/* Safe Campus Guidelines */}
-        <View
-          style={[
-            styles.sectionCard,
-            { backgroundColor: theme.card, borderColor: theme.borderStrong },
-            Shadows.tag,
-          ]}>
-          <ThemedText style={styles.sectionTitle}>Safe Recovery Protocols</ThemedText>
+          <ThemedText style={styles.sectionTitle}>Privacy & Offline Storage</ThemedText>
           <ThemedText style={[styles.bodyText, { color: theme.textSecondary }]}>
-            • Arrange high-value handovers at public campus locations (e.g., Campus Safety desk or Student Union).
-            {'\n'}• Verify unique identifiers (wallpaper, serial suffix, sticker details) before releasing property.
+            CampusFind operates 100% offline on your device using AsyncStorage. No user
+            accounts or tracking telemetry are collected. You retain complete ownership of
+            your data and can export or reset your local database at any time from the Profile tab.
           </ThemedText>
         </View>
       </ScrollView>
@@ -149,25 +130,25 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   scrollContent: {
-    paddingHorizontal: Spacing.four,
-    paddingTop: Spacing.two,
-    paddingBottom: Spacing.seven,
+    paddingHorizontal: ScreenPadding,
+    paddingBottom: 60,
   },
   brandCard: {
-    padding: Spacing.four,
-    borderRadius: BorderRadius.sm,
-    borderWidth: 1,
     alignItems: 'center',
+    padding: Spacing.five,
+    borderRadius: BorderRadius.lg,
+    borderWidth: 1,
+    marginTop: Spacing.two,
     marginBottom: Spacing.three,
   },
   logoBox: {
-    width: 60,
-    height: 60,
-    borderRadius: BorderRadius.xs,
+    width: 64,
+    height: 64,
+    borderRadius: BorderRadius.md,
     borderWidth: 1.5,
     alignItems: 'center',
     justifyContent: 'center',
-    marginBottom: Spacing.two,
+    marginBottom: Spacing.three,
   },
   appName: {
     fontSize: 22,
@@ -175,59 +156,51 @@ const styles = StyleSheet.create({
     letterSpacing: -0.4,
   },
   tagline: {
-    fontSize: 13,
-    fontWeight: '700',
+    fontSize: 14,
+    fontWeight: '600',
     marginTop: 2,
   },
   version: {
-    fontSize: 11,
-    marginTop: 4,
+    fontSize: 12,
+    marginTop: 6,
   },
   sectionCard: {
     padding: Spacing.four,
-    borderRadius: BorderRadius.sm,
+    borderRadius: BorderRadius.lg,
     borderWidth: 1,
     marginBottom: Spacing.three,
   },
   sectionTitle: {
-    fontSize: 14,
-    fontWeight: '800',
+    fontSize: 15,
+    fontWeight: '700',
     marginBottom: Spacing.two,
-    textTransform: 'uppercase',
-    letterSpacing: 0.4,
   },
   bodyText: {
-    fontSize: 13,
-    lineHeight: 20,
+    fontSize: 14,
+    lineHeight: 22,
   },
-  featureItem: {
+  safetyRow: {
     flexDirection: 'row',
     alignItems: 'flex-start',
-    gap: 6,
-    marginVertical: 4,
   },
-  featureText: {
-    fontSize: 13,
-    lineHeight: 18,
+  safetyIcon: {
+    marginTop: 2,
+    marginRight: Spacing.three,
+  },
+  safetyCol: {
     flex: 1,
   },
-  boldText: {
-    fontWeight: '700',
-  },
-  techBadgeRow: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 6,
-    marginTop: 4,
-  },
-  techBadge: {
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: BorderRadius.xs,
-    borderWidth: 1,
-  },
-  techBadgeText: {
-    fontSize: 11,
+  safetyHeading: {
+    fontSize: 14,
     fontWeight: '600',
+    marginBottom: 2,
+  },
+  safetyDesc: {
+    fontSize: 13,
+    lineHeight: 18,
+  },
+  divider: {
+    height: 1,
+    marginVertical: Spacing.three,
   },
 });
