@@ -19,13 +19,16 @@ export const Fonts = Platform.select({
     rounded: 'normal',
     mono: 'monospace',
   },
-  web: {
-    sans: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif',
-    serif: 'Georgia, Cambria, "Times New Roman", Times, serif',
-    rounded: 'system-ui, sans-serif',
-    mono: 'ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace',
-  },
 });
+
+export const Typography = {
+  xs: 11,     // Badges, captions, timestamps, meta counts
+  sm: 13,     // Secondary text, sub-labels, category labels
+  base: 14,   // Body text, form inputs, search bar
+  md: 16,     // Item card titles, buttons, section headings
+  lg: 18,     // Modal titles, dialog headings
+  xl: 22,     // Screen main titles
+} as const;
 
 export const Spacing = {
   zero: 0,

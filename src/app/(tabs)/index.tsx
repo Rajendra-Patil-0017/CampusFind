@@ -21,7 +21,7 @@ import { useTheme } from '@/hooks/use-theme';
 import { StorageService } from '@/services/storage';
 import { FilterState, ItemSortOption, LostFoundItem } from '@/types/item';
 import { applyFiltersAndSort } from '@/utils/filters';
-import { BorderRadius, MaxContentWidth, ScreenPadding, Shadows, Spacing } from '@/constants/theme';
+import { BorderRadius, MaxContentWidth, ScreenPadding, Shadows, Spacing, Typography } from '@/constants/theme';
 import { Ionicons } from '@expo/vector-icons';
 
 export default function HomeScreen() {
@@ -97,7 +97,7 @@ export default function HomeScreen() {
       style={[styles.safeArea, { backgroundColor: theme.background }]}
       edges={['top', 'left', 'right']}>
       <View style={styles.responsiveContainer}>
-        {/* Header with Title & Aligned Report Button */}
+        {/* Header — Clean title & tagline without duplicate Report button (Issue #5) */}
         <View style={styles.header}>
           <View style={styles.titleArea}>
             <ThemedText style={styles.headerTitle}>CampusFind</ThemedText>
@@ -105,79 +105,77 @@ export default function HomeScreen() {
               Find It. Report It. Return It.
             </ThemedText>
           </View>
-
-          <PrimaryButton
-            title="Report"
-            icon="add"
-            size="sm"
-            onPress={() => router.push('/(tabs)/add')}
-            style={styles.headerReportBtn}
-          />
         </View>
 
-        {/* Search Bar */}
+        {/* Search Bar — Clean input without ambiguous toggle filter button (Issue #4) */}
         <View style={styles.searchSection}>
           <SearchBar
             value={filters.searchQuery}
             onChangeText={(text) => setFilters((prev) => ({ ...prev, searchQuery: text }))}
             onClear={() => setFilters((prev) => ({ ...prev, searchQuery: '' }))}
-            showFilterButton
-            hasActiveFilters={hasActiveFilters}
-            onFilterPress={() => setSortModalVisible(true)}
+            showFilterButton={false}
           />
         </View>
 
-        {/* Compact Filter Group */}
-        <View style={styles.filterRow}>
-          <FilterChip
-            label="All"
-            selected={filters.type === 'all' && filters.status === 'active'}
-            onPress={() => setFilters((prev) => ({ ...prev, type: 'all', status: 'active' }))}
-          />
-          <FilterChip
-            label="Lost"
-            icon="alert-circle-outline"
-            selected={filters.type === 'lost' && filters.status === 'active'}
-            count={lostCount}
-            tint="lost"
-            onPress={() =>
-              setFilters((prev) => ({
-                ...prev,
-                type: prev.type === 'lost' && prev.status === 'active' ? 'all' : 'lost',
-                status: 'active',
-              }))
-            }
-          />
-          <FilterChip
-            label="Found"
-            icon="checkmark-circle-outline"
-            selected={filters.type === 'found' && filters.status === 'active'}
-            count={foundCount}
-            tint="found"
-            onPress={() =>
-              setFilters((prev) => ({
-                ...prev,
-                type: prev.type === 'found' && prev.status === 'active' ? 'all' : 'found',
-                status: 'active',
-              }))
-            }
-          />
-          <FilterChip
-            label="Resolved"
-            icon="archive-outline"
-            selected={filters.status === 'resolved'}
-            count={resolvedCount}
-            onPress={() =>
-              setFilters((prev) => ({
-                ...prev,
-                status: prev.status === 'resolved' ? 'active' : 'resolved',
-              }))
-            }
-          />
+        {/* Filter Group with Explicit Section Header (Issue #2) */}
+        <View style={styles.filterSection}>
+          <ThemedText style={[styles.filterGroupLabel, { color: theme.textSecondary }]}>
+            STATUS
+          </ThemedText>
+          <View style={styles.filterRow} accessibilityRole="radiogroup" accessibilityLabel="Filter by status">
+            <FilterChip
+              label="All Statuses"
+              selected={filters.type === 'all' && filters.status === 'active'}
+              onPress={() => setFilters((prev) => ({ ...prev, type: 'all', status: 'active' }))}
+            />
+            <FilterChip
+              label="Lost"
+              icon="alert-circle-outline"
+              selected={filters.type === 'lost' && filters.status === 'active'}
+              count={lostCount}
+              tint="lost"
+              onPress={() =>
+                setFilters((prev) => ({
+                  ...prev,
+                  type: prev.type === 'lost' && prev.status === 'active' ? 'all' : 'lost',
+                  status: 'active',
+                }))
+              }
+            />
+            <FilterChip
+              label="Found"
+              icon="checkmark-circle-outline"
+              selected={filters.type === 'found' && filters.status === 'active'}
+              count={foundCount}
+              tint="found"
+              onPress={() =>
+                setFilters((prev) => ({
+                  ...prev,
+                  type: prev.type === 'found' && prev.status === 'active' ? 'all' : 'found',
+                  status: 'active',
+                }))
+              }
+            />
+            <FilterChip
+              label="Resolved"
+              icon="archive-outline"
+              selected={filters.status === 'resolved'}
+              count={resolvedCount}
+              onPress={() =>
+                setFilters((prev) => ({
+                  ...prev,
+                  status: prev.status === 'resolved' ? 'active' : 'resolved',
+                }))
+              }
+            />
+          </View>
         </View>
 
-        {/* Category Horizontal Chips */}
+        {/* Category Filter Group with Explicit Section Header (Issue #2) */}
         <View style={styles.categorySection}>
+          <ThemedText style={[styles.filterGroupLabel, { color: theme.textSecondary, paddingHorizontal: ScreenPadding }]}>
+            CATEGORY
+          </ThemedText>
           <CategoryPicker
             horizontal
             includeAll
@@ -197,6 +195,8 @@ export default function HomeScreen() {
           <Pressable
             onPress={() => setSortModalVisible(true)}
             hitSlop={8}
+            accessibilityRole="button"
+            accessibilityLabel={`Sort notices, currently ${sortLabels[filters.sortBy]}`}
             style={styles.sortButton}>
             <ThemedText style={[styles.sortText, { color: theme.primary }]}>
               {sortLabels[filters.sortBy]}
@@ -264,7 +264,9 @@ export default function HomeScreen() {
               <ThemedText style={styles.modalTitle}>Sort & Filter</ThemedText>
               <Pressable
                 onPress={() => setSortModalVisible(false)}
-                hitSlop={8}>
+                hitSlop={8}
+                accessibilityRole="button"
+                accessibilityLabel="Close sort options">
                 <Ionicons name="close" size={20} color={theme.textSecondary} />
               </Pressable>
             </View>
@@ -281,6 +283,8 @@ export default function HomeScreen() {
                     setFilters((prev) => ({ ...prev, sortBy: option }));
                     setSortModalVisible(false);
                   }}
+                  accessibilityRole="radio"
+                  accessibilityState={{ checked: isSelected }}
                   style={[
                     styles.sortOption,
                     {
@@ -330,7 +334,7 @@ export default function HomeScreen() {
                   style={{
                     color: filters.status === 'active' ? '#FFFFFF' : theme.text,
                     fontWeight: '600',
-                    fontSize: 13,
+                    fontSize: Typography.sm,
                   }}>
                   Active Notices
                 </ThemedText>
@@ -354,7 +358,7 @@ export default function HomeScreen() {
                   style={{
                     color: filters.status === 'resolved' ? '#FFFFFF' : theme.text,
                     fontWeight: '600',
-                    fontSize: 13,
+                    fontSize: Typography.sm,
                   }}>
                   Resolved Archive
                 </ThemedText>
@@ -391,39 +395,39 @@ const styles = StyleSheet.create({
     alignSelf: 'center',
   },
   header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
     paddingHorizontal: ScreenPadding,
-    paddingTop: Spacing.two,
+    paddingTop: Spacing.three,
     paddingBottom: Spacing.one,
   },
   titleArea: {
     flex: 1,
   },
   headerTitle: {
-    fontSize: 21,
+    fontSize: Typography.xl,
     fontWeight: '800',
     letterSpacing: -0.4,
   },
   headerSubtitle: {
-    fontSize: 12.5,
+    fontSize: Typography.sm,
     marginTop: 1,
-  },
-  headerReportBtn: {
-    height: 38,
-    minHeight: 38,
-    paddingHorizontal: 14,
   },
   searchSection: {
     paddingHorizontal: ScreenPadding,
     marginTop: Spacing.two,
     marginBottom: Spacing.two,
   },
-  filterRow: {
-    flexDirection: 'row',
+  filterSection: {
     paddingHorizontal: ScreenPadding,
     marginBottom: Spacing.two,
+  },
+  filterGroupLabel: {
+    fontSize: Typography.xs,
+    fontWeight: '700',
+    letterSpacing: 0.6,
+    marginBottom: 6,
+  },
+  filterRow: {
+    flexDirection: 'row',
     flexWrap: 'wrap',
     gap: 6,
   },
@@ -438,7 +442,7 @@ const styles = StyleSheet.create({
     marginBottom: Spacing.two,
   },
   resultsCount: {
-    fontSize: 12,
+    fontSize: Typography.xs,
     fontWeight: '500',
   },
   sortButton: {
@@ -447,7 +451,7 @@ const styles = StyleSheet.create({
     gap: 3,
   },
   sortText: {
-    fontSize: 12,
+    fontSize: Typography.xs,
     fontWeight: '600',
   },
   listContent: {
@@ -478,11 +482,11 @@ const styles = StyleSheet.create({
     marginBottom: Spacing.three,
   },
   modalTitle: {
-    fontSize: 17,
+    fontSize: Typography.lg,
     fontWeight: '700',
   },
   modalSectionLabel: {
-    fontSize: 11,
+    fontSize: Typography.xs,
     fontWeight: '700',
     letterSpacing: 0.5,
     marginBottom: Spacing.two,
@@ -497,7 +501,7 @@ const styles = StyleSheet.create({
     marginBottom: 4,
   },
   sortOptionLabel: {
-    fontSize: 14,
+    fontSize: Typography.base,
   },
   statusOptionRow: {
     flexDirection: 'row',

@@ -10,7 +10,7 @@ import { StatusBadge } from './StatusBadge';
 import { useTheme } from '@/hooks/use-theme';
 import { LostFoundItem } from '@/types/item';
 import { CATEGORY_DETAILS, Category } from '@/constants/categories';
-import { BorderRadius, Shadows, Spacing } from '@/constants/theme';
+import { BorderRadius, Shadows, Spacing, Typography } from '@/constants/theme';
 import { formatRelativeTime, getTruncatedText } from '@/utils/formatters';
 import { Ionicons } from '@expo/vector-icons';
 
@@ -154,7 +154,7 @@ const styles = StyleSheet.create({
     justifyContent: 'flex-start',
   },
   title: {
-    fontSize: 15,
+    fontSize: Typography.md,
     fontWeight: '700',
     letterSpacing: -0.2,
     marginBottom: 4,
@@ -176,7 +176,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
   },
   categoryText: {
-    fontSize: 11,
+    fontSize: Typography.xs,
     fontWeight: '500',
   },
   locationDateRow: {
@@ -192,20 +192,20 @@ const styles = StyleSheet.create({
     flexShrink: 1,
   },
   locationText: {
-    fontSize: 12,
+    fontSize: Typography.xs,
     fontWeight: '500',
   },
   dotSeparator: {
-    fontSize: 10,
+    fontSize: Typography.xs,
     marginHorizontal: 2,
   },
   timeText: {
-    fontSize: 11,
+    fontSize: Typography.xs,
     fontWeight: '500',
   },
   description: {
-    fontSize: 12.5,
-    lineHeight: 17,
+    fontSize: Typography.sm,
+    lineHeight: 18,
     marginTop: 1,
   },
 });

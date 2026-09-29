@@ -8,7 +8,7 @@ import {
 import { ThemedText } from './themed-text';
 import { useTheme } from '@/hooks/use-theme';
 import { CATEGORIES, CATEGORY_DETAILS } from '@/constants/categories';
-import { BorderRadius, Spacing } from '@/constants/theme';
+import { BorderRadius, Spacing, Typography } from '@/constants/theme';
 import { Ionicons } from '@expo/vector-icons';
 
 interface CategoryPickerProps {
@@ -60,7 +60,7 @@ export function CategoryPicker({
                   fontWeight: selectedCategory === 'all' ? '700' : '500',
                 },
               ]}>
-              All
+              All Categories
             </ThemedText>
           </Pressable>
         )}
@@ -163,7 +163,7 @@ const styles = StyleSheet.create({
     minHeight: 32,
   },
   horizontalLabel: {
-    fontSize: 12,
+    fontSize: Typography.xs,
   },
   gridContainer: {
     flexDirection: 'row',
@@ -182,7 +182,7 @@ const styles = StyleSheet.create({
     minHeight: 44,
   },
   gridLabel: {
-    fontSize: 13,
+    fontSize: Typography.sm,
     flexShrink: 1,
   },
 });
